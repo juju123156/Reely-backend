@@ -1,10 +1,10 @@
-package com.untitled.untitled;
+package com.Reely.Reely;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class UntitledApplicationTests {
+class ReelyApplicationTests {
 
 	@Test
 	void contextLoads() {

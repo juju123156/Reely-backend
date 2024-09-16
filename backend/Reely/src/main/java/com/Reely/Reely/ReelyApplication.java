@@ -1,13 +1,13 @@
-package com.untitled.untitled;
+package com.Reely.Reely;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class UntitledApplication {
+public class ReelyApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(UntitledApplication.class, args);
+		SpringApplication.run(ReelyApplication.class, args);
 	}
 
 }
