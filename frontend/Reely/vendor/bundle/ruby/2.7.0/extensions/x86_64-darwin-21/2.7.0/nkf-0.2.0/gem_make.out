@@ -1,0 +1,16 @@
+current directory: /Users/gimjuhyeon/Documents/Reely/frontend/Reely/vendor/bundle/ruby/2.7.0/gems/nkf-0.2.0/ext/nkf
+/Users/gimjuhyeon/.rbenv/versions/2.7.5/bin/ruby -I /Users/gimjuhyeon/.rbenv/versions/2.7.5/lib/ruby/2.7.0 -r ./siteconf20240916-80579-17piucx.rb extconf.rb
+creating Makefile
+
+current directory: /Users/gimjuhyeon/Documents/Reely/frontend/Reely/vendor/bundle/ruby/2.7.0/gems/nkf-0.2.0/ext/nkf
+make "DESTDIR=" clean
+
+current directory: /Users/gimjuhyeon/Documents/Reely/frontend/Reely/vendor/bundle/ruby/2.7.0/gems/nkf-0.2.0/ext/nkf
+make "DESTDIR="
+compiling nkf.c
+linking shared-object nkf.bundle
+ld: warning: -undefined dynamic_lookup may not work with chained fixups
+
+current directory: /Users/gimjuhyeon/Documents/Reely/frontend/Reely/vendor/bundle/ruby/2.7.0/gems/nkf-0.2.0/ext/nkf
+make "DESTDIR=" install
+/usr/local/bin/ginstall -c -m 0755 nkf.bundle ./.gem.20240916-80579-aa68i7
