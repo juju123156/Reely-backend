@@ -20,8 +20,6 @@ jobs:
 
     - name: Change directory to project root
       run: cd backend/Reely && ls
-    - name: Grant execute permission for gradlew
-      run:  chmod +x ./gradlew 
 
     - name: init with Gradle
       uses: gradle/gradle-build-action@v2
