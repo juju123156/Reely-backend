@@ -1,10 +1,12 @@
 FROM openjdk:17-jdk-slim   
 
 WORKDIR /app
-COPY . .
 
-CMD ["sh", "-c", "cd /app/backend/Reely && ./gradlew", "clean", "build"]
+# 로컬의 JAR 파일을 Docker 이미지의 /app 디렉토리로 복사합니다.
+COPY build/libs/*.jar app.jar
 
-ARG JAR_FILE=build/libs/*.jar
+# JAR 파일을 실행할 명령어를 지정합니다.
+ENTRYPOINT ["java", "-jar", "app.jar"]
 
-COPY ${JAR_FILE} app.jar
+# 컨테이너가 사용할 포트를 지정합니다. (스프링 부트의 기본 포트는 8080입니다)
+EXPOSE 8080
