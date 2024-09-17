@@ -1,0 +1,48 @@
+name: Build Image And Push an Image to ECR(CI)
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    outputs:
+      IMAGE_TAG: ${{ steps.set-var.outputs.IMAGE_TAG }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-2
+          role-to-assume: ${{ secrets.ARN_ECR_PUSH_ROLE }}
+          role-session-name: ecrPrivatePushRole
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set var
+        id: set-var
+        run: |
+          echo ::set-output name=ECR_REGISTRY::${{ steps.login-ecr.outputs.registry }}
+          echo ::set-output name=ECR_REPOSITORY::nodejs-server
+          echo ::set-output name=IMAGE_TAG::$(cat VERSION)
+
+      - name: Docker image Build
+        id: build-image
+        run: |
+          docker build \
+            -f Dockerfile \
+            -t ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }} .
+
+      - name: Docker image Push
+        id: push-image
+        run: |
+          docker push ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}
