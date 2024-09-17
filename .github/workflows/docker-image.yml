@@ -30,7 +30,7 @@ jobs:
         REPOSITORY: Reely
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        ./gradlew bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+        cd Reely/backend/Reely && ./gradlew bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
         docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         docker push $REGISTRY/$REPOSITORY:latest
