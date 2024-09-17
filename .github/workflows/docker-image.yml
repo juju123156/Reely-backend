@@ -1,0 +1,37 @@
+name: "Continuous Integration - Spring App"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  code-build:
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+    needs: code-tests
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with: 
+        distribution: 'zulu'
+        java-version: '17'
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::<aws_account_number>:role/GithubOIDCRole
+        aws-region: ap-northeast-2
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Build and push docker image to Amazon ECR
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REPOSITORY: Reely
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        ./gradlew bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+        docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
+        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        docker push $REGISTRY/$REPOSITORY:latest
