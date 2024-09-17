@@ -21,11 +21,12 @@ jobs:
 
     - name: init with Gradle
       uses: gradle/gradle-build-action@v2
-    - run:  cd backend/Reely && gradle init
+    - run:  gradle init
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
-      with:
-        arguments: build
+      run: cd backend/Reely && ./gradlew build
+      # uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+      # with:
+      #   arguments: build
       
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
