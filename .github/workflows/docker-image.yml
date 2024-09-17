@@ -10,7 +10,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    needs: code-tests
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-java@v3
@@ -20,7 +19,7 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        role-to-assume: arn:aws:iam::<aws_account_number>:role/GithubOIDCRole
+        role-to-assume: arn:aws:iam::<aws_account_number>:role/ECR_OIDC_ROLE
         aws-region: ap-northeast-2
     - name: Login to Amazon ECR
       id: login-ecr
