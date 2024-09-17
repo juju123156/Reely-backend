@@ -1,6 +1,6 @@
 FROM openjdk:17-jdk-slim   
 
-CMD ["./gradlew", "clean", "build"]
+CMD ["./backend/Reely/gradlew", "clean", "build"]
 
 ARG JAR_FILE=build/libs/*.jar
 
