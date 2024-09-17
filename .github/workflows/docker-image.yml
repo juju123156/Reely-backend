@@ -23,8 +23,13 @@ jobs:
     - name: Change directory to project root
       run: cd ./backend/Reely
       
-    - name: Build Docker image with Gradle
-      run: ./gradlew clear build
+    - name: init with Gradle
+      uses: gradle/gradle-build-action@v2
+    - run: gradle init
+    - name: Build with Gradle
+      uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+      with:
+    arguments: build
       
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
