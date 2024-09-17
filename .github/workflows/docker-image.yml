@@ -20,6 +20,12 @@ jobs:
     - name: Grant execute permission for gradlew
       run:  chmod +x ./backend/Reely/gradlew
     - name: Build with Gradle
+    - uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
+      with:
+        arguments: build
+        build-root-directory: ./backend/Reely
+        
+    - name: Build with Gradle2
       run:  ./backend/Reely/gradlew clean build --debug --exclude-task test
 
     - name: Configure AWS credentials
