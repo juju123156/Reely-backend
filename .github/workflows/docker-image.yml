@@ -17,11 +17,13 @@ jobs:
       with: 
         distribution: 'temurin'
         java-version: '17'
-    - name: Grant execute permission for gradlew
-      run:  chmod +x ./backend/Reely/gradlew 
-      
+
     - name: Change directory to project root
       run: cd ./backend/Reely
+    - name: Grant execute permission for gradlew
+      run:  chmod +x /gradlew 
+      
+
       
     - name: init with Gradle
       uses: gradle/gradle-build-action@v2
