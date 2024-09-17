@@ -27,7 +27,7 @@ jobs:
     - name: Build and push docker image to Amazon ECR
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: Reely
+        REPOSITORY: 673004107015.dkr.ecr.ap-northeast-2.amazonaws.com/ns-reely-ecr
         IMAGE_TAG: ${{ github.sha }}
       run: |
         cd /backend/Reely && ./gradlew bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
