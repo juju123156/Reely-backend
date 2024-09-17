@@ -24,7 +24,7 @@ jobs:
       run: cd ./backend/Reely
       
     - name: Build Docker image with Gradle
-      run: ./gradlew bootBuildImage
+      run: gradlew bootBuildImage
       
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
