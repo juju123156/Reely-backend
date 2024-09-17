@@ -18,7 +18,7 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
     - name: Grant execute permission for gradlew
-      run:  chmod +x ./backend/Reely/gradlew
+      run:  chmod +x ./backend/Reely/gradlew bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
     - name: Build with Gradle
       uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
       with:
@@ -39,7 +39,6 @@ jobs:
         REPOSITORY: ns-reely-ecr
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
         docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         docker push $REGISTRY/$REPOSITORY:latest
