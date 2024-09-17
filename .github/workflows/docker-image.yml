@@ -19,7 +19,7 @@ jobs:
         java-version: '17'
 
     - name: Change directory to project root
-      run: pwd
+      run: cd backend/Reely && pwd
     - name: Grant execute permission for gradlew
       run:  chmod +x gradlew 
 
