@@ -26,7 +26,7 @@ jobs:
         build-root-directory: ./backend/Reely
         
     - name: Build with Gradle2
-      run:  ./backend/Reely/gradlew clean build --debug --exclude-task test
+      run:  ./backend/Reely/gradlew clean build --debug
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
