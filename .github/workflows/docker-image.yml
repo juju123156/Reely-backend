@@ -10,9 +10,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    outputs:
-      version: ${{ steps.set-version.outputs.version }}
-      tag: ${{ steps.set-version.outputs.tag }}
     steps:
     - uses: actions/checkout@v3
       name: Set up JDK 17
@@ -20,7 +17,6 @@ jobs:
       with: 
         distribution: 'temurin'
         java-version: '17'
-
 
     - name: init with Gradle
       uses: gradle/gradle-build-action@v2
@@ -36,23 +32,16 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-   
-    - name: Set ENVs
-      id: set-version
+
+    - name: Build, tag, and push image to Amazon ECR
+      uses: docker/build-push-action@v3
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ns-reely-ecr
         version: ${{ steps.set-version.outputs.version }}
-        
-    - name: Build, tag, and push image to Amazon ECR
-      uses: docker/build-push-action@v3
       with:
         context: .
         push: true
         tags: ${{ ECR_REGISTRY }}/${{ ECR_REPOSITORY }}:${{ github.sha }}
         file: qa.github.Dockerfile
 
-    - name: Check Container Tag
-      env:
-        version: ${{ steps.set-version.outputs.version }}
-      run: echo version $version
