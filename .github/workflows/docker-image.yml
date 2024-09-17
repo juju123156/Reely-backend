@@ -12,10 +12,16 @@ jobs:
       contents: read
     steps:
     - uses: actions/checkout@v3
+    - name: Set up JDK 17
     - uses: actions/setup-java@v3
       with: 
-        distribution: 'zulu'
+        distribution: 'temurin'
         java-version: '17'
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: cd Reely/backend/Reely && ./gradlew clean build --debug
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
       with:
@@ -30,7 +36,7 @@ jobs:
         REPOSITORY: ns-reely-ecr
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        cd /backend/Reely && ./gradlew bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
+        bootBuildImage --imageName=$REGISTRY/$REPOSITORY:$IMAGE_TAG
         docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         docker push $REGISTRY/$REPOSITORY:latest
