@@ -34,7 +34,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Docker build
-      run: docker build -t reely ./
+      run: docker build -t reely backend/Reely/.
         
     - name: push base image
       env:
