@@ -40,6 +40,7 @@ jobs:
         ECR_REPOSITORY: ns-reely-ecr
         IMAGE_TAG: ${{ github.sha }}
       run: |
+          ls /home/runner/work/Reely/Reely/backend/Reely
           pwd
           ls
           cd backend/Reely
