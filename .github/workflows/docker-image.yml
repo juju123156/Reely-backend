@@ -40,7 +40,7 @@ jobs:
         ECR_REPOSITORY: ns-reely-ecr
         IMAGE_TAG: ${{ github.sha }}
       run: |
-          cd backend/Reely
+          cd /backend/Reely
           docker build -f ./backend/Reely --platform arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
