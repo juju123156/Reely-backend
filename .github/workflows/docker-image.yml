@@ -22,7 +22,10 @@ jobs:
       uses: gradle/gradle-build-action@v2
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: |
+           pwd
+           ls
+           ./gradlew build
       
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
