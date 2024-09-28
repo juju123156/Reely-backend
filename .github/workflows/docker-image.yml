@@ -22,7 +22,7 @@ jobs:
       uses: gradle/gradle-build-action@v2
 
     - name: Build with Gradle
-      run: cd backend/Reely && ./gradlew build
+      run: ./gradlew build
       
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
@@ -37,15 +37,11 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ns-reely-ecr
+        ECR_REPOSITORY: ns-reely-ecr/reely-backend
         IMAGE_TAG: ${{ github.sha }}
       run: |
-          ls -a /home/runner/work/Reely/Reely/backend/Reely
           pwd
           ls
-          cd backend/Reely
-          pwd
-          ls
-          docker build  -f /home/runner/work/Reely/Reely/backend/Reely/.dockerfile --platform arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG /home/runner/work/Reely/Reely/backend/Reely
+          docker build .dockerfile --platform arm64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
