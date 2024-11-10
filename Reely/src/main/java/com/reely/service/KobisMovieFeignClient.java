@@ -6,13 +6,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.reely.dto.KobisDto;
 
-@FeignClient(name="MovieClient", url="http://kobis.or.kr/kobisopenapi/webservice/rest/movie")
-public interface MovieFeignClient {
+@FeignClient(name="KobisMovieClient", url="http://kobis.or.kr/kobisopenapi/webservice/rest/movie")
+public interface KobisMovieFeignClient {
     // @GetMapping("")
     // KmdbDto kmdbDto(@RequestBody );
-    String KobisKey = "";
-    String movieNm="기생충";
-    
+
     @GetMapping("/searchMovieList.json")
     String getMovieInfo(@RequestParam("key") String key, @RequestParam("movieNm") String movieNm);
 }
+
