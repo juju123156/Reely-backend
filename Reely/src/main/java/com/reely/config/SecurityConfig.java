@@ -18,15 +18,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.csrf((auth) -> auth.disable());
-//        http.formLogin((auth) -> auth.disable());
-//        http.httpBasic((auth) -> auth.disable());
-//        http.authorizeHttpRequests((auth) -> auth
-//                        .requestMatchers("/api/auth/**").permitAll()
-//                        .anyRequest().authenticated());
-//
-//        http.sessionManagement((session) -> session
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.csrf((auth) -> auth.disable());
+        http.formLogin((auth) -> auth.disable());
+        http.httpBasic((auth) -> auth.disable());
+        http.authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/api/**").permitAll() // 추후 /api/auth/** 수정
+                        .anyRequest().authenticated());
+
+        http.sessionManagement((session) -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
