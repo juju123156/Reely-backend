@@ -5,4 +5,28 @@
     <select id="findAll" resultType="Member">
         select * from reely_stg.member
     </select>
+    <insert id="insertMember" parameterType="Member">
+        insert into reely_stg.member
+            (
+             member_id
+            ,member_pwd
+            ,member_email
+            ,member_nm
+            ,member_gender
+            ,member_birth
+            ,sns_yn
+            ,file_id
+            )
+        values
+            (
+             #{memberId}
+            ,#{memberPwd}
+            ,#{memberEmail}
+            ,#{memberNm}
+            ,#{memberGender}
+            ,#{memberBirth}
+            ,#{snsYn}
+            ,#{fileId}
+            )
+    </insert>
 </mapper>
