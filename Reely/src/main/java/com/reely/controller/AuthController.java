@@ -20,10 +20,10 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @GetMapping("/join")
-    public ResponseEntity<String> join() {
-
-        return new ResponseEntity<>("join", HttpStatus.OK);
+    @PostMapping("/join")
+    public ResponseEntity<Integer> join(@RequestBody MemberDto memberDto) {
+        Integer result = authService.insertMember(memberDto);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @PostMapping("/login")

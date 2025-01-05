@@ -8,4 +8,6 @@ import java.util.List;
 @Mapper
 public interface MemberMapper {
     List<MemberDto> findAll();
+
+    Integer insertMember(MemberDto memberDto);
 }

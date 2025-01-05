@@ -22,4 +22,9 @@ public class AuthServiceImpl implements AuthService {
     public List<MemberDto> findAll() {
         return memberMapper.findAll();
     }
+
+    @Override
+    public Integer insertMember(MemberDto memberDto) {
+        return memberMapper.insertMember(memberDto);
+    }
 }
