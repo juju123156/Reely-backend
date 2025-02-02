@@ -1,9 +1,10 @@
 package com.reely.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,11 +24,11 @@ public class SettingController {
     }
 
     @GetMapping(value = "/faq/getFaqList")
-    public List<SettingDto> getFaqList(){
+    public ResponseEntity<List<SettingDto>> getFaqList(){
         List<SettingDto> faqList = settingService.getFaqList();
             System.out.printf(faqList.toString());
 
-        return faqList;
+        return new ResponseEntity<>(faqList, HttpStatus.OK);
     }
 
 }

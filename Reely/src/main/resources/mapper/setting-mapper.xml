@@ -2,7 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.reely.mapper.SettingMapper">
-    <select id="findAll" resultType="Setting">
-        SELECT * FROM reely_stg.faq
+
+    <select id="findAll" resultType="setting">
+        SELECT faq_id as faqId
+             , faq_title as faqTitle 
+             , faq_contents as faqContents
+        FROM reely_stg.faq
     </select>
 </mapper>

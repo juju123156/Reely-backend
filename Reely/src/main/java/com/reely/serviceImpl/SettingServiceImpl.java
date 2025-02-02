@@ -17,11 +17,13 @@ public class SettingServiceImpl implements SettingService {
     private final SettingMapper settingMapper;
 
     @Autowired
-    public SettingServiceImpl(SettingMapper settingMapper) {
-        this.settingMapper = settingMapper;
+    public SettingServiceImpl(SettingMapper settingRepository) {
+        this.settingMapper = settingRepository;
     }
     @Override
     public List<SettingDto> getFaqList() {
-        return settingMapper.findAll();
+        List<SettingDto>  faqList= settingMapper.findAll();
+        System.out.printf("service "+faqList.toString());
+        return faqList;
     }
 }

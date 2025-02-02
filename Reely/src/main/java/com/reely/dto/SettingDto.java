@@ -10,6 +10,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class SettingDto {
+    private String faqId;
     private String faqTitle;
     private String faqContents;
     private List<SettingDto> faqList;
