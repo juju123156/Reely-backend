@@ -10,4 +10,6 @@ public interface MemberMapper {
     List<MemberDto> findAll();
 
     Integer insertMember(MemberDto memberDto);
+
+    Boolean findMemberByMemberId(MemberDto memberDto);
 }
