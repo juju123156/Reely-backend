@@ -23,6 +23,7 @@ public class SecurityConfig {
         http.httpBasic((auth) -> auth.disable());
         http.authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/api/**").permitAll() // 추후 /api/auth/** 수정
+                        .requestMatchers("/setting/**").permitAll() 
                         .anyRequest().authenticated());
 
         http.sessionManagement((session) -> session

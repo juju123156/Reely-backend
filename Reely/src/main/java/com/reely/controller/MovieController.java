@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.reely.dto.KmdbDto;
 import com.reely.dto.KobisDto;
 import com.reely.service.KmdbMovieFeignClient;
 import com.reely.service.KobisMovieFeignClient;
@@ -28,11 +29,7 @@ public class MovieController {
         this.kobisFeignClient = kobisFeignClient;
         this.kmdbFeignClient= kmdbFeignClient;
     }
-
     
-
-
-        
     @GetMapping(value = "/getMovieInfo/{movieNm}" , produces = "application/json")
     public KobisDto getMovieInfo(@PathVariable("movieNm") String movieNm) {
         String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
@@ -94,7 +91,12 @@ public class MovieController {
             
 
             String kmJsonData = kmdbFeignClient.getMovieInfo(kmdbKey, movieNm);
-            System.out.println(kmJsonData);
+            //System.out.println(kmJsonData);
+            KmdbDto kmdbDto = new KmdbDto();
+            JSONObject jsonObjectKm = (JSONObject) parser.parse(kmJsonData);
+            JSONArray movieListKm = (JSONArray) jsonObjectKm.get("Data");
+            //JSONArray movieListKm = (JSONArray) movieListResultKm.get("Result");
+            System.out.println(movieListKm);
         } catch (Exception e) {
             e.printStackTrace();
         }
