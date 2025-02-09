@@ -9,4 +9,17 @@
              , faq_contents as faqContents
         FROM reely_stg.faq
     </select>
+
+    <select id="getTermsList" resultType="setting">
+        SELECT terms_id as termsId
+             , terms_title as termsTitle 
+             , terms_contents as termsContents
+        FROM reely_stg.terms
+    </select>
+
+    <select id="getLatestVersion" resultType="setting">
+        SELECT released_date as releasedDate
+             , version as version
+        FROM reely_stg.version
+    </select>
 </mapper>

@@ -9,4 +9,8 @@ import com.reely.dto.SettingDto;
 @Mapper
 public interface SettingMapper {
         List<SettingDto> findAll();
+
+        List<SettingDto> getTermsList();
+
+        List<SettingDto> getLatestVersion();
 }

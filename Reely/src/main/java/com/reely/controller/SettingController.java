@@ -26,9 +26,21 @@ public class SettingController {
     @GetMapping(value = "/faq/getFaqList")
     public ResponseEntity<List<SettingDto>> getFaqList(){
         List<SettingDto> faqList = settingService.getFaqList();
-            System.out.printf(faqList.toString());
-
         return new ResponseEntity<>(faqList, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/terms/getTermsList")
+    public ResponseEntity<List<SettingDto>> getTermsList(){
+        List<SettingDto> termsList = settingService.getTermsList();
+        return new ResponseEntity<>(termsList, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/serviceInfo/getLatestVersion")
+    public ResponseEntity<List<SettingDto>> getLatestVersion(){
+        List<SettingDto> latestVersion = settingService.getLatestVersion();
+            System.out.printf(latestVersion.toString());
+
+        return new ResponseEntity<>(latestVersion, HttpStatus.OK);
     }
 
 }

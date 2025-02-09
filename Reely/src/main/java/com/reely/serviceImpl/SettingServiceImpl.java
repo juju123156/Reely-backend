@@ -22,8 +22,17 @@ public class SettingServiceImpl implements SettingService {
     }
     @Override
     public List<SettingDto> getFaqList() {
-        List<SettingDto>  faqList= settingMapper.findAll();
-        System.out.printf("service "+faqList.toString());
+        List<SettingDto>  faqList = settingMapper.findAll();
         return faqList;
+    }
+    @Override
+    public List<SettingDto> getTermsList() {
+        List<SettingDto>  termsList = settingMapper.getTermsList();
+        return termsList;
+    }
+    @Override
+    public List<SettingDto> getLatestVersion() {
+        List<SettingDto>  latestVersion = settingMapper.getLatestVersion();
+        return latestVersion;
     }
 }
