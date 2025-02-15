@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,9 +29,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody MemberDto memberDto) {
+    public ResponseEntity<Map<String,String>> login(@RequestBody MemberDto memberDto) {
         System.out.printf(memberDto.toString());
-        return new ResponseEntity<>("login", HttpStatus.OK);
+        MemberDto  userInfoDto = authService.findMemberInfo(memberDto);
+        Map<String, String> userInfo = new HashMap<>();
+        userInfo.put("memberId",userInfoDto.getMemberId());
+        userInfo.put("memberEmail",userInfoDto.getMemberEmail());
+
+        return ResponseEntity.ok(userInfo);
     }
 
     @GetMapping("/findAll")

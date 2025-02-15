@@ -29,8 +29,17 @@
             ,#{fileId}
             )
     </insert>
+
     <select id="findMemberByMemberId" parameterType="Member" resultType="Boolean">
         select count(member_id)
+          from reely_stg.member
+         where member_id = #{memberId}
+    </select>
+
+    <select id="findMemberInfo" parameterType="Member" resultType="Member">
+        select              
+               member_id AS memberId
+             , member_email AS memberEmail
           from reely_stg.member
          where member_id = #{memberId}
     </select>

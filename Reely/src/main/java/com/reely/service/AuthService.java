@@ -8,4 +8,6 @@ public interface AuthService {
     List<MemberDto> findAll();
 
     Integer insertMember(MemberDto memberDto);
+
+    MemberDto findMemberInfo(MemberDto memberDto);
 }

@@ -27,4 +27,9 @@ public class AuthServiceImpl implements AuthService {
     public Integer insertMember(MemberDto memberDto) {
         return memberMapper.insertMember(memberDto);
     }
+
+    @Override
+    public MemberDto findMemberInfo(MemberDto memberDto) {
+        return memberMapper.findMemberInfo(memberDto);
+    }
 }
