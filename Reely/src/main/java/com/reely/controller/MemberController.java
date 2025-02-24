@@ -22,8 +22,14 @@ public class MemberController {
     }
 
     @PostMapping("/duplicate-id")
-    public ResponseEntity<Boolean> join(@RequestBody MemberDto memberDto) {
+    public ResponseEntity<Boolean> duplicateId(@RequestBody MemberDto memberDto) {
         Boolean result = memberService.findMemberByMemberId(memberDto);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PostMapping("/join")
+    public ResponseEntity<Integer> join(@RequestBody MemberDto memberDto) {
+        Integer result = memberService.insertMember(memberDto);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

@@ -37,9 +37,10 @@
     </select>
 
     <select id="findMemberInfo" parameterType="Member" resultType="Member">
-        select              
+        select
                member_id AS memberId
              , member_email AS memberEmail
+             , member_pwd AS memberPwd
           from reely_stg.member
          where member_id = #{memberId}
     </select>

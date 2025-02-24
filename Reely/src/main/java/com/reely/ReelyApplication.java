@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @EnableFeignClients("com.reely.service")
 // 스프링 시큐리티 임시로 막아둠
-@SpringBootApplication(exclude = SecurityAutoConfiguration.class)
+@SpringBootApplication
 public class ReelyApplication {
 
 	public static void main(String[] args) {

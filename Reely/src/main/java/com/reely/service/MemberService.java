@@ -4,4 +4,6 @@ import com.reely.dto.MemberDto;
 
 public interface MemberService {
     Boolean findMemberByMemberId(MemberDto memberDto);
+
+    Integer insertMember(MemberDto memberDto);
 }
