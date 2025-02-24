@@ -13,5 +13,5 @@ public interface MemberMapper {
 
     Boolean findMemberByMemberId(MemberDto memberDto);
 
-    MemberDto findMemberInfo(MemberDto memberDto);
+    MemberDto findMemberInfo(String memberId);
 }
