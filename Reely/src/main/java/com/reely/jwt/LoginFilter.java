@@ -52,7 +52,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String memberId = memberDto.getMemberId();
         String memberPwd = memberDto.getMemberPwd();
 
-
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(memberId, memberPwd, null);
         log.info("authToken={}", authToken);
         // AuthenticationManager를 사용하여 인증 진행
@@ -61,9 +60,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
-        String memberId = authentication.getName();
+        String username = authentication.getName();
 
-        String token = jwtUtil.createJwt(memberId, 60*60*10L);
+        String token = jwtUtil.createJwt(username, 60*60*10L);
 
         response.addHeader("Authorization", "Bearer " + token);
     }

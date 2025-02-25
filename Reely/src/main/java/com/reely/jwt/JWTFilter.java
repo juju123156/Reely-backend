@@ -1,5 +1,6 @@
 package com.reely.jwt;
 
+import com.reely.dto.MemberDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,7 +44,9 @@ public class JWTFilter extends OncePerRequestFilter {
         String token = authorization.split(" ")[1];
 
         //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
+        Boolean expired = jwtUtil.isExpired(token);
+
+        if (expired) {
             log.info("token is expired");
             filterChain.doFilter(request, response);
 
@@ -54,8 +57,12 @@ public class JWTFilter extends OncePerRequestFilter {
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
-        Authentication authToken = new UsernamePasswordAuthenticationToken(username, null, Collections.singletonList(authority));
+        MemberDto memberDto = new MemberDto();
+        memberDto.setMemberPk(username);
+        memberDto.setRole(role);
+        CustomUserDetails customUserDetails = new CustomUserDetails(memberDto);
+
+        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
 

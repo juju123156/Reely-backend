@@ -48,7 +48,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // React 앱이나 기타 클라이언트의 주소를 명시
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:8081")); // 3000 테스트용
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:8081", "http://localhost:8080")); // 3000 테스트용
         // 명시적으로 허용할 HTTP 메서드 설정
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 필요한 헤더를 명시 (추가 헤더 필요시 확장 가능)
