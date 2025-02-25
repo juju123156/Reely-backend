@@ -1,13 +1,20 @@
 package com.reely.jwt;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
+@Slf4j
 @Component
 public class JWTUtil {
     private SecretKey secretKey;
@@ -24,18 +31,26 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
     }
 
-    public Boolean isExpired(String token) {
-
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+    public Boolean isExpired(String token){
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(Date.from(this.getDateTime().toInstant()));
     }
 
-    public String createJwt(String memberId, Long expiredMs) {
+
+    public String createJwt(String username, Long expiredMs) {
+        // 서울 시간대로 현재 시간 가져오기
+        Date issuedAt = Date.from(this.getDateTime().toInstant());  // ZonedDateTime을 Date로 변환
+        Date expiration = Date.from(this.getDateTime().plusMinutes(expiredMs).toInstant());  // 만료 시간 설정
 
         return Jwts.builder()
-                .claim("memberId", memberId)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .claim("username", username)
+                .issuedAt(issuedAt)
+                .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
     }
+
+    private ZonedDateTime getDateTime() {
+        return ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+    }
+
 }

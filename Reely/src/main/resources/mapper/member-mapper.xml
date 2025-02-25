@@ -16,6 +16,8 @@
             ,member_birth
             ,sns_yn
             ,file_id
+            ,del_yn
+            ,role
             )
         values
             (
@@ -27,6 +29,8 @@
             ,#{memberBirth}
             ,#{snsYn}
             ,#{fileId}
+            ,'N'
+            ,'ROLE_USER'
             )
     </insert>
 
@@ -34,14 +38,18 @@
         select count(member_id)
           from reely_stg.member
          where member_id = #{memberId}
+           and del_yn != 'Y'
     </select>
 
     <select id="findMemberInfo" parameterType="Member" resultType="Member">
         select
-               member_id AS memberId
-             , member_email AS memberEmail
+               member_pk AS memberPk
+             , member_id AS memberId
              , member_pwd AS memberPwd
-          from reely_stg.member
-         where member_id = #{memberId}
+             , member_email AS memberEmail
+             , role
+        from reely_stg.member
+        where member_id = #{memberId}
+          and del_yn != 'Y'
     </select>
 </mapper>
