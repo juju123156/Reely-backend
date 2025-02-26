@@ -1,8 +1,9 @@
 package com.reely.config;
 
-import com.reely.jwt.JWTFilter;
-import com.reely.jwt.JWTUtil;
-import com.reely.jwt.LoginFilter;
+import com.reely.security.CustomAuthenticationFailureHandler;
+import com.reely.security.JWTFilter;
+import com.reely.security.JWTUtil;
+import com.reely.security.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,9 +27,12 @@ public class SecurityConfig {
 
     private final JWTUtil jwtUtil;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+    private final CustomAuthenticationFailureHandler failureHandler;
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, CustomAuthenticationFailureHandler failureHandler) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.failureHandler = failureHandler;
     }
 
     @Bean
@@ -71,12 +75,13 @@ public class SecurityConfig {
         http.formLogin((auth) -> auth.disable());
         http.httpBasic((auth) -> auth.disable());
         http.authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/auth/login", "/api/member/join", "/api/member/duplicate-id").permitAll() // 추후 /api/auth/** 수정
+                        .requestMatchers("/api/auth/**").permitAll() // 추후 /api/auth/** 수정
+                        .requestMatchers("/api/member/join", "/api/member/duplicate-id").permitAll() // 추후 /api/auth/** 수정
                         //.requestMatchers("/setting/**").permitAll()
                         .anyRequest().authenticated());
 
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-        http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), this.jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), this.jwtUtil, failureHandler), UsernamePasswordAuthenticationFilter.class);
         http.sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
