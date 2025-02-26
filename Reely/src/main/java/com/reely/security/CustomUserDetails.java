@@ -1,4 +1,4 @@
-package com.reely.jwt;
+package com.reely.security;
 
 import com.reely.dto.MemberDto;
 import org.springframework.security.core.GrantedAuthority;
