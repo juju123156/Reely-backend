@@ -2,6 +2,8 @@ package com.reely.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reely.dto.MemberDto;
+import com.reely.dto.TokenDto;
+import com.reely.service.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
@@ -23,18 +25,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 
+import static com.reely.security.TokenConstants.*;
+
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
-
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
 
+    private final AuthService authService;
+
     private  final CustomAuthenticationFailureHandler failureHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, CustomAuthenticationFailureHandler failureHandler) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, CustomAuthenticationFailureHandler failureHandler, AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.failureHandler = failureHandler;
+        this.authService =authService;
         this.setFilterProcessesUrl("/api/auth/login");
     }
 
@@ -68,7 +74,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         //유저 정보
         String username = authentication.getName();
 
@@ -77,27 +83,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        //토큰 생성
-        String access = jwtUtil.createJwt("access", username, role, 600000L);
-        String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+        // 토큰 생성
+        String access = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, REFRESH_TOKEN_EXPIRATION);
 
-        //토큰 (테스트)저장
-        // access >  Secure Storage 저장으로 수정
-        // refresh > redis 저장
-        response.setHeader("access", access);
-        response.addCookie(createCookie("refresh", refresh));
+        // Refresh 토큰을 Redis에 저장
+        authService.saveRefreshToken(username, refresh, REFRESH_TOKEN_EXPIRATION);
+
+        TokenDto tokenDto = TokenDto.builder()
+                .accessToken(access)
+                .refreshToken(refresh)
+                .build();
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(tokenDto));
+
         response.setStatus(HttpStatus.OK.value());
-    }
-
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
-        //cookie.setSecure(true);
-        //cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-        return cookie;
     }
 
     @Override

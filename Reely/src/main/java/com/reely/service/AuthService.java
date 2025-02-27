@@ -1,5 +1,9 @@
 package com.reely.service;
 
 public interface AuthService {
-    boolean validRefreshToken();
+    Boolean isExistRefreshToken(String username);
+
+    void saveRefreshToken(String username, String refreshToken, Long ExpiredMs);
+
+    void deleteRefreshToken(String username);
 }
