@@ -1,81 +1,69 @@
 package com.reely.controller;
 
+import com.reely.dto.TokenDto;
 import com.reely.security.JWTUtil;
-import io.jsonwebtoken.ExpiredJwtException;
+import com.reely.security.TokenConstants;
+import com.reely.service.AuthService;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+
 
 @Controller
 @RequestMapping("/api/auth")
 public class AuthController {
     private final JWTUtil jwtUtil;
 
-    public AuthController(JWTUtil jwtUtil) {
+    private final AuthService authService;
+
+    public AuthController(JWTUtil jwtUtil, AuthService authService) {
         this.jwtUtil = jwtUtil;
+        this.authService = authService;
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> reissue(@RequestBody TokenDto resTokenDto) {
         //get refresh token
-        String refresh = null;
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("refresh")) {
-                refresh = cookie.getValue();
-            }
+        String refresh = resTokenDto.getRefreshToken();
+
+        // 토큰 유효성 체크
+        if (!jwtUtil.isValid(refresh, TokenConstants.TOKEN_TYPE_REFRESH)) {
+            return new ResponseEntity<>("refresh token is not valid", HttpStatus.BAD_REQUEST);
         }
-        // 리프레쉬 valid > authService 로 리팩토링 예정
-        if (refresh == null) {
-            //response status code
-            return new ResponseEntity<>("refresh token null", HttpStatus.BAD_REQUEST);
-        }
-
-        //expired check
-        try {
-            jwtUtil.isExpired(refresh);
-        } catch (ExpiredJwtException e) {
-
-            //response status code
-            return new ResponseEntity<>("refresh token expired", HttpStatus.BAD_REQUEST);
-        }
-
-        // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
-        String category = jwtUtil.getCategory(refresh);
-
-        if (!category.equals("refresh")) {
-
-            //response status code
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
-        }
-
-        // refresh 토큰이 db에 존재하는지 확인 로직 추가
 
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
 
-        // access 발급
-        String newAccess = jwtUtil.createJwt("access", username, role, 600000L);
-        // refresh 발급 (rotate)
-        String newRefresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+        // refresh 토큰이 db에 존재하는지 확인
+        if (!authService.isExistRefreshToken(username)) {
+            return new ResponseEntity<>("refresh token is not exist", HttpStatus.BAD_REQUEST);
+        }
+
+        // 토큰 발급
+        String newAccess = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION);
+        String newRefresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, TokenConstants.REFRESH_TOKEN_EXPIRATION);
         
-        // 기존 refresh 블랙리스트 처리
+        // 기존 refresh 삭제 처리
+        authService.deleteRefreshToken(username);
 
-        // access >  Secure Storage 저장으로 수정
         // refresh > redis 저장
-        response.setHeader("access", newAccess);
-        response.addCookie(createCookie("refresh", newRefresh));
+        authService.saveRefreshToken(username, newRefresh, TokenConstants.REFRESH_TOKEN_EXPIRATION);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        TokenDto tokenDto = TokenDto.builder()
+                .accessToken(newAccess)
+                .refreshToken(newRefresh)
+                .build();
+
+        return new ResponseEntity<>(tokenDto, HttpStatus.OK);
     }
 
     //@PostMapping("/logout")
-
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);

@@ -1,7 +1,6 @@
 package com.reely.security;
 
 import com.reely.dto.MemberDto;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,10 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
+import static com.reely.security.TokenConstants.*;
 
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
@@ -29,55 +31,43 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        // 헤더에서 access키에 담긴 토큰을 꺼냄
-        String accessToken = request.getHeader("access");
+        String authorization = request.getHeader(AUTHORIZATION_HEADER);
 
-        // 토큰이 없다면 다음 필터로 넘김
-        if (accessToken == null) {
+        // Authorization 헤더가 없거나 "Bearer "로 시작하지 않으면 넘어가기
+        if (ObjectUtils.isEmpty(authorization) || !authorization.startsWith(TOKEN_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
-        try {
-            jwtUtil.isExpired(accessToken);
-        } catch (ExpiredJwtException e) {
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("access token expired");
+        String accessToken = authorization.split(" ")[1];
 
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        // 토큰이 access인지 확인 (발급시 페이로드에 명시)
-        String category = jwtUtil.getCategory(accessToken);
-
-        if (!category.equals("access")) {
-
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("invalid access token");
-
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        // 토큰 유효성 검사
+        if (!jwtUtil.isValid(accessToken, TokenConstants.TOKEN_TYPE_ACCESS)) {
+            sendErrorResponse(response, "Access token is not valid", HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
 
+        // 토큰에서 사용자 정보 추출
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
         MemberDto memberDto = new MemberDto();
         memberDto.setMemberPk(username);
         memberDto.setRole(role);
+
+        // 사용자 인증 정보 설정
         CustomUserDetails customUserDetails = new CustomUserDetails(memberDto);
-
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }
+
+    private void sendErrorResponse(HttpServletResponse response, String message, int statusCode) throws IOException {
+        response.setStatus(statusCode);
+        PrintWriter writer = response.getWriter();
+        writer.print(message);
+    }
+
 }
