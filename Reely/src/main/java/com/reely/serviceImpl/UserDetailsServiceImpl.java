@@ -1,6 +1,8 @@
 package com.reely.serviceImpl;
 
 import com.reely.dto.MemberDto;
+import com.reely.exception.CustomException;
+import com.reely.exception.ErrorCode;
 import com.reely.security.CustomUserDetails;
 import com.reely.mapper.MemberMapper;
 import lombok.extern.slf4j.Slf4j;

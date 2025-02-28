@@ -1,6 +1,8 @@
 package com.reely.security;
 
 import com.reely.dto.MemberDto;
+import com.reely.exception.CustomException;
+import com.reely.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,15 +33,16 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String authorization = request.getHeader(AUTHORIZATION_HEADER);
+        String authorization = request.getHeader("Authorization");
 
         // Authorization 헤더가 없거나 "Bearer "로 시작하지 않으면 넘어가기
-        if (ObjectUtils.isEmpty(authorization) || !authorization.startsWith(TOKEN_PREFIX)) {
+        if (ObjectUtils.isEmpty(authorization) || !authorization.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String accessToken = authorization.split(" ")[1];
+
 
         // 토큰 유효성 검사
         if (!jwtUtil.isValid(accessToken, TokenConstants.TOKEN_TYPE_ACCESS)) {

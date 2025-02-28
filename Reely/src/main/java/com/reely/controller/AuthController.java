@@ -1,11 +1,14 @@
 package com.reely.controller;
 
 import com.reely.dto.TokenDto;
+import com.reely.exception.CustomException;
+import com.reely.exception.ErrorCode;
 import com.reely.security.JWTUtil;
 import com.reely.security.TokenConstants;
 import com.reely.service.AuthService;
 import jakarta.servlet.http.Cookie;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 
 @Controller
+@Slf4j
 @RequestMapping("/api/auth")
 public class AuthController {
     private final JWTUtil jwtUtil;
@@ -34,7 +38,8 @@ public class AuthController {
 
         // 토큰 유효성 체크
         if (!jwtUtil.isValid(refresh, TokenConstants.TOKEN_TYPE_REFRESH)) {
-            return new ResponseEntity<>("refresh token is not valid", HttpStatus.BAD_REQUEST);
+            log.info("[ERROR] refresh token is not valid");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
         String username = jwtUtil.getUsername(refresh);
@@ -42,7 +47,8 @@ public class AuthController {
 
         // refresh 토큰이 db에 존재하는지 확인
         if (!authService.isExistRefreshToken(username)) {
-            return new ResponseEntity<>("refresh token is not exist", HttpStatus.BAD_REQUEST);
+            log.info("[ERROR] refresh token is not exist");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
         // 토큰 발급
