@@ -85,10 +85,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // 토큰 생성
         String access = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, REFRESH_TOKEN_EXPIRATION);
+        String refresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, TokenConstants.REFRESH_TOKEN_EXPIRATION);
 
         // Refresh 토큰을 Redis에 저장
-        authService.saveRefreshToken(username, refresh, REFRESH_TOKEN_EXPIRATION);
+        authService.saveRefreshToken(username, refresh, TokenConstants.REFRESH_TOKEN_EXPIRATION);
 
         TokenDto tokenDto = TokenDto.builder()
                 .accessToken(access)

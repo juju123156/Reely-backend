@@ -1,7 +1,11 @@
 package com.reely.security;
 
+import com.reely.exception.CustomException;
+import com.reely.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -82,19 +86,21 @@ public class JWTUtil {
             return false;
         }
 
-        // 토큰 유형 검사
-        if (!type.equals(this.getType(token))) {
-            return  false;
-        }
-
-        // 토큰 만료 검사
         try {
-            this.isExpired(token);
-            return true;  // 만료되지 않음
+            return (!this.isExpired(token)) && type.equals(this.getType(token));  // 만료되지 않은 경우 유형 비교
         } catch (ExpiredJwtException e) {
-            return false;  // 만료됨
+            log.info("만료된 토큰", e);
+            return false;
+        } catch (SignatureException e) {
+            log.info("서명 불일치", e);
+            return false; // 서명이 일치하지 않음
+        } catch (JwtException e) {
+            log.info("잘못된 토큰", e);
+            return false;
+        } catch (Exception e) {
+            log.info("기타 예외", e);
+            return false;
         }
-
     };
 
 }
