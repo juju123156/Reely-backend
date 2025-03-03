@@ -23,7 +23,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void saveRefreshToken(String username, String refreshToken, Long ExpiredMs) {
-        log.info("RefreshToken 생성");
+        log.info("RefreshToken 저장");
         redisTemplate.opsForValue().set(username, refreshToken, ExpiredMs, TimeUnit.SECONDS);
     }
 
