@@ -3,10 +3,10 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.reely.mapper.MemberMapper">
     <select id="findAll" resultType="Member">
-        select * from reely_stg.member
+        select * from member
     </select>
     <insert id="insertMember" parameterType="Member">
-        insert into reely_stg.member
+        insert into member
             (
              member_id
             ,member_pwd
@@ -36,7 +36,7 @@
 
     <select id="findMemberByMemberId" parameterType="Member" resultType="Boolean">
         select count(member_id)
-          from reely_stg.member
+          from member
          where member_id = #{memberId}
            and del_yn != 'Y'
     </select>
@@ -48,7 +48,7 @@
              , member_pwd AS memberPwd
              , member_email AS memberEmail
              , role
-        from reely_stg.member
+        from member
         where member_id = #{memberId}
           and del_yn != 'Y'
     </select>

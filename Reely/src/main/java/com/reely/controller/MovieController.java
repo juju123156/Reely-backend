@@ -1,5 +1,7 @@
 package com.reely.controller;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -23,17 +25,31 @@ public class MovieController {
     
     private final KobisMovieFeignClient kobisFeignClient;
     private final KmdbMovieFeignClient kmdbFeignClient;
+    String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
+    String kmdbKey = "MZ53N9719N5IH6Z7G2R9";
 
-    @Autowired
     public MovieController(KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient) {
         this.kobisFeignClient = kobisFeignClient;
         this.kmdbFeignClient= kmdbFeignClient;
     }
     
+    @GetMapping(value = "/getWeeklyBoxOfficeList" , produces = "application/json")
+    public String getWeeklyBoxOfficeList(KobisDto kobisDto) {
+        LocalDate today = LocalDate.now();
+        // 오늘 날짜로부터 1주전
+        LocalDate oneWeekAgo = today.minusWeeks(1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String targetDt = oneWeekAgo.format(formatter);
+        String jsonData = kobisFeignClient.getWeeklyBoxOfficeList(kobisKey, targetDt,"0","K");
+        System.out.println(jsonData);
+
+        
+        return "Hello World";
+    }
+
     @GetMapping(value = "/getMovieInfo/{movieNm}" , produces = "application/json")
     public KobisDto getMovieInfo(@PathVariable("movieNm") String movieNm) {
-        String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
-        String kmdbKey = "MZ53N9719N5IH6Z7G2R9";
+
         String jsonData = kobisFeignClient.getMovieInfo(kobisKey, movieNm);
         //System.out.println(jsonData);
         System.out.println("--------------------------------------------------------------");
