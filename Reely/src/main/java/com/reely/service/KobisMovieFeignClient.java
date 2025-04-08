@@ -14,7 +14,6 @@ public interface KobisMovieFeignClient {
     @GetMapping("/movie/searchMovieList.json")
     String getMovieInfo(@RequestParam("key") String key, @RequestParam("movieNm") String movieNm);
 
-    @GetMapping("/boxoffice/searchWeeklyBoxOfficeList.json")
-    String getWeeklyBoxOfficeList(@RequestParam("key") String key, @RequestParam("targetDt") String targetDt, @RequestParam("weekGb") String weekGb, @RequestParam("repNationCd") String repNationCd);
+    @GetMapping("/boxoffice/searchDailyBoxOfficeList.json")
+    String getDailyBoxOfficeList(@RequestParam("key") String key, @RequestParam("targetDt") String targetDt, @RequestParam("repNationCd") String repNationCd);
 }
-

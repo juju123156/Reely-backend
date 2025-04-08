@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reely.dto.KmdbDto;
 import com.reely.dto.KobisDto;
 import com.reely.service.KmdbMovieFeignClient;
@@ -33,17 +35,16 @@ public class MovieController {
         this.kmdbFeignClient= kmdbFeignClient;
     }
     
-    @GetMapping(value = "/getWeeklyBoxOfficeList" , produces = "application/json")
-    public String getWeeklyBoxOfficeList(KobisDto kobisDto) {
+    @GetMapping(value = "/getDailyBoxOfficeList" , produces = "application/json")
+    public String getDailyBoxOfficeList(KobisDto kobisDto) {
         LocalDate today = LocalDate.now();
-        // 오늘 날짜로부터 1주전
-        LocalDate oneWeekAgo = today.minusWeeks(1);
+        // 오늘 날짜로부터 1일전
+        LocalDate oneDayAgo = today.minusDays(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String targetDt = oneWeekAgo.format(formatter);
-        String jsonData = kobisFeignClient.getWeeklyBoxOfficeList(kobisKey, targetDt,"0","K");
+        String targetDt = oneDayAgo.format(formatter);
+        String jsonData = kobisFeignClient.getDailyBoxOfficeList(kobisKey, targetDt,"K");
         System.out.println(jsonData);
 
-        
         return "Hello World";
     }
 
@@ -52,12 +53,13 @@ public class MovieController {
 
         String jsonData = kobisFeignClient.getMovieInfo(kobisKey, movieNm);
         //System.out.println(jsonData);
-        System.out.println("--------------------------------------------------------------");
-        //ObjectMapper objectMapper = new ObjectMapper();
+        
+        ObjectMapper objectMapper = new ObjectMapper();
 
         // JSON 데이터 파싱
         
-        KobisDto kobisDto = new KobisDto(); 
+        KobisDto kobisDto = new KobisDto();
+        KmdbDto kmdbDto = new KmdbDto();
         JSONParser parser = new JSONParser();
 
         try {
@@ -65,54 +67,35 @@ public class MovieController {
             JSONObject movieListResult = (JSONObject) jsonObject.get("movieListResult");
             JSONArray movieList = (JSONArray) movieListResult.get("movieList");
             JSONObject movie = (JSONObject) movieList.get(0);
-            kobisDto.setMovieCd((String) movie.get("movieCd"));
-            kobisDto.setMovieNm((String) movie.get("movieNm"));
-            kobisDto.setMovieNmEn((String) movie.get("movieNmEn"));
-            kobisDto.setMovieNmOg((String) movie.get("movieNmOg"));
-            kobisDto.setPrdtYear((String) movie.get("prdtYear"));
-            kobisDto.setShowTm((String) movie.get("showTm"));
-            kobisDto.setOpenDt((String) movie.get("openDt"));
-            kobisDto.setPrdtStatNm((String) movie.get("prdtStatNm"));
-            kobisDto.setTypeNm((String) movie.get("typeNm"));
-            kobisDto.setNationAlt((String) movie.get("nationAlt"));
-            kobisDto.setGenreAlt((String) movie.get("genreAlt"));
-            kobisDto.setDirectors((List<Map<String, String>>) movie.get("directors"));
-            kobisDto.setActors((List<Map<String, String>>) movie.get("actors"));
-            kobisDto.setCast((List<Map<String, String>>) movie.get("cast"));
-            kobisDto.setCastEn((List<Map<String, String>>) movie.get("castEn"));
-            kobisDto.setShowTypes((String) movie.get("showTypes"));
-            kobisDto.setShowTypeGroupNm((String) movie.get("showTypeGroupNm"));
-            kobisDto.setShowTypeNm((String) movie.get("showTypeNm"));
-            kobisDto.setAudits((List<Map<String, String>>) movie.get("audits"));
-            kobisDto.setAuditNo((String) movie.get("auditNo"));
-            kobisDto.setWatchGradeNm((String) movie.get("watchGradeNm"));
-            kobisDto.setCompanys((List<Map<String, String>>) movie.get("companys"));
-            kobisDto.setCompanyCd((String) movie.get("companyCd"));
-            kobisDto.setCompanyNm((String) movie.get("companyNm"));
-            kobisDto.setCompanyNmEn((String) movie.get("companyNmEn"));
-            kobisDto.setCompanyPartNm((String) movie.get("companyPartNm"));
-            kobisDto.setStaffs((List<Map<String, String>>) movie.get("staffs"));
-            kobisDto.setStaffRoleNm((String) movie.get("staffRoleNm"));
-            kobisDto.setDirectorNm((String) movie.get("directorNm"));
-            kobisDto.setOpenStartDt((String) movie.get("openStartDt"));
-            kobisDto.setOpenEndDt((String) movie.get("openEndDt"));
-            kobisDto.setPrdtStartYear((String) movie.get("prdtStartYear"));
-            kobisDto.setPrdtEndYear((String) movie.get("prdtEndYear"));
-            kobisDto.setRepNationCd((String) movie.get("repNationCd"));
-            kobisDto.setRepNationNm((String) movie.get("repNationNm"));
-            kobisDto.setRepGenreNm((String) movie.get("repGenreNm"));
-            kobisDto.setMovieTypeCd((String) movie.get("movieTypeCd"));
-            
+            kobisDto = objectMapper.readValue(movie.toJSONString(), KobisDto.class);
+            //System.out.println(movie.toJSONString());
+            //System.out.println("--------------------------------------------------------------");
             //System.out.println(kobisDto.toString());
             
 
             String kmJsonData = kmdbFeignClient.getMovieInfo(kmdbKey, movieNm);
             //System.out.println(kmJsonData);
-            KmdbDto kmdbDto = new KmdbDto();
-            JSONObject jsonObjectKm = (JSONObject) parser.parse(kmJsonData);
-            JSONArray movieListKm = (JSONArray) jsonObjectKm.get("Data");
-            //JSONArray movieListKm = (JSONArray) movieListResultKm.get("Result");
-            System.out.println(movieListKm);
+            
+            JsonNode root = objectMapper.readTree(jsonData);
+        
+            // Data 배열의 첫 번째 요소를 가져옴
+            JsonNode dataArray = root.path("Data");
+            if (dataArray.isArray() && dataArray.size() > 0) {
+                JsonNode firstData = dataArray.get(0);
+                JsonNode resultArray = firstData.path("Result");
+                List<KmdbDto> kmdbList = objectMapper.readerForListOf(KmdbDto.class).readValue(resultArray);
+                String kmdbListStr = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(kmdbList);
+                System.out.println(kmdbListStr);
+                System.out.println("--------------------------------------------------------------");
+                System.out.println(resultArray.toString());
+            }
+            //System.out.println(movieListKm);
+            //System.out.println(movieListKm.toJSONString());
+           
+            //System.out.println(kmdbDto.toString());
+            //System.out.println("2--------------------------------------------------------------");
+            
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

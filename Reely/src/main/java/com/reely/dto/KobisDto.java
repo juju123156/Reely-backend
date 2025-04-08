@@ -57,5 +57,56 @@ public class KobisDto {
     private String repNationNm;     // 대표 제작국가명
     private String repGenreNm;      // 대표 장르명
 
+    /** 박스오피스 */
+    /** 박스오피스 종류 */
+    private String boxofficeType;
+
+    /** 박스오피스 조회 일자 (yyyyMMdd-yyyyMMdd 형식) */
+    private String showRange;
+
+    /** 순번 */
+    private String rnum;
+
+    /** 해당일자의 박스오피스 순위 */
+    private String rank;
+
+    /** 전일 대비 순위 증감분 */
+    private String rankInten;
+
+    /** 랭킹 신규 진입 여부 ("OLD" 또는 "NEW") */
+    private String rankOldAndNew;
+
+    /** 해당일의 매출액 */
+    private String salesAmt;
+
+    /** 해당 영화의 매출 비율 (전체 대비 %) */
+    private String salesShare;
+
+    /** 전일 대비 매출액 증감분 */
+    private String salesInten;
+
+    /** 전일 대비 매출 증감 비율 (%) */
+    private String salesChange;
+
+    /** 누적 매출액 */
+    private String salesAcc;
+
+    /** 해당일의 관객 수 */
+    private String audiCnt;
+
+    /** 전일 대비 관객 수 증감분 */
+    private String audiInten;
+
+    /** 전일 대비 관객 수 증감 비율 (%) */
+    private String audiChange;
+
+    /** 누적 관객 수 */
+    private String audiAcc;
+
+    /** 해당일 상영 스크린 수 */
+    private String scrnCnt;
+
+    /** 해당일 상영 횟수 */
+    private String showCnt;
 
 }
