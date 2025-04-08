@@ -84,10 +84,26 @@ public class MovieController {
                 JsonNode firstData = dataArray.get(0);
                 JsonNode resultArray = firstData.path("Result");
                 List<KmdbDto> kmdbList = objectMapper.readerForListOf(KmdbDto.class).readValue(resultArray);
-                String kmdbListStr = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(kmdbList);
-                System.out.println(kmdbListStr);
+                
+                if (kmdbList != null) {
+                    for (KmdbDto dto : kmdbList) {
+                        String title = dto.getTitle();
+                        System.out.println(title);
+                        if (title != null) {
+                            String cleaned = title
+                                    .replaceAll(" !HS ", "")
+                                    .replaceAll(" !HE ", "")
+                                    .replaceAll("^\\s+|\\s+$", "")  // trim
+                                    .replaceAll(" +", " ")          // multiple spaces → one
+                                    .replaceAll("(\\D)\\s+(\\d)", "$1$2");
+                            dto.setTitle(cleaned);
+                            System.out.println(cleaned);
+                        }
+                    }
+                }
+                
+                System.out.println(kmdbList);
                 System.out.println("--------------------------------------------------------------");
-                System.out.println(resultArray.toString());
             }
             
             //System.out.println(movieListKm.toJSONString());
@@ -102,4 +118,5 @@ public class MovieController {
 
         return kobisDto;
     }
+
 }
