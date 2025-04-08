@@ -75,8 +75,8 @@ public class MovieController {
 
             String kmJsonData = kmdbFeignClient.getMovieInfo(kmdbKey, movieNm);
             //System.out.println(kmJsonData);
-            
-            JsonNode root = objectMapper.readTree(jsonData);
+            System.out.println(kmJsonData);
+            JsonNode root = objectMapper.readTree(kmJsonData);
         
             // Data 배열의 첫 번째 요소를 가져옴
             JsonNode dataArray = root.path("Data");
@@ -89,7 +89,7 @@ public class MovieController {
                 System.out.println("--------------------------------------------------------------");
                 System.out.println(resultArray.toString());
             }
-            //System.out.println(movieListKm);
+            
             //System.out.println(movieListKm.toJSONString());
            
             //System.out.println(kmdbDto.toString());
