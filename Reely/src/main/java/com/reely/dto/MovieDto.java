@@ -1,6 +1,7 @@
 package com.reely.dto;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,12 +25,12 @@ public class MovieDto {
     // 러닝타임 (분)   
     private Integer movieRuntime;  
     // 개봉일  
-    private LocalDate movieOpenDt;
+    private String movieOpenDt;
     // 감독 이름    
     private String  movieAutids;
     
     // 감독 이름 (복수일 수 있음)
-    private List<Map<String, String>> movieAutidsList;
+    private List<HashMap<String, String>> movieAutidsList;
 
     // 감독 고유번호
     private String movieAutidsNo;

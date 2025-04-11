@@ -2,8 +2,11 @@ package com.reely.controller;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -50,13 +53,13 @@ public class MovieController {
     }
 
     @GetMapping(value = "/getMovieInfo/{movieNm}" , produces = "application/json")
-    public KobisDto getMovieInfo(@PathVariable("movieNm") String movieNm) {
+    public List<KmdbDto> getMovieInfo(@PathVariable("movieNm") String movieNm) {
         ObjectMapper objectMapper = new ObjectMapper();
         KobisDto kobisDto = new KobisDto();
         KmdbDto kmdbDto = new KmdbDto();
         JSONParser parser = new JSONParser();
         MovieDto movieDto = new MovieDto();
-
+        List<KmdbDto> kmdbList = new ArrayList<>();
         String jsonData = kobisFeignClient.getMovieInfo(kobisKey, movieNm);
 
         try {
@@ -65,7 +68,7 @@ public class MovieController {
             JSONArray movieList = (JSONArray) movieListResult.get("movieList");
             JSONObject movie = (JSONObject) movieList.get(0);
             kobisDto = objectMapper.readValue(movie.toJSONString(), KobisDto.class);
-
+            System.out.println("===========================kobis json==========================="+movie);
             String kmJsonData = kmdbFeignClient.getMovieInfo(kmdbKey, movieNm);
             JsonNode root = objectMapper.readTree(kmJsonData);
             // Data 배열의 첫 번째 요소를 가져옴
@@ -73,7 +76,7 @@ public class MovieController {
             if (dataArray.isArray() && dataArray.size() > 0) {
                 JsonNode firstData = dataArray.get(0);
                 JsonNode resultArray = firstData.path("Result");
-                List<KmdbDto> kmdbList = objectMapper.readerForListOf(KmdbDto.class).readValue(resultArray);
+                kmdbList = objectMapper.readerForListOf(KmdbDto.class).readValue(resultArray);
                 
                 if (kmdbList != null) {
                     for (KmdbDto dto : kmdbList) {
@@ -92,48 +95,61 @@ public class MovieController {
             }
 
             if(kobisDto != null){
-                movieDto.setMovieId("MV12345");
-                movieDto.setMovieKoNm("겨울왕국");
-                movieDto.setMovieEnNm("Frozen");
-                movieDto.setMoviePrDt("2013");
-                movieDto.setMovieRuntime(108);
-                movieDto.setMovieOpenDt(LocalDate.of(2014, 1, 16));
-                movieDto.setMovieAutids("Chris Buck, Jennifer Lee");
+                //movieDto.setMovieId("MV12345");
+                movieDto.setMovieKoNm(kmdbDto.getTitle());
+                movieDto.setMovieEnNm(kmdbDto.getTitleOrg());
+                movieDto.setMoviePrDt(kmdbDto.getProdYear());
+                movieDto.setMovieRuntime(Integer.parseInt(kmdbDto.getRuntime()));
+                movieDto.setMovieOpenDt(kmdbDto.getRepRlsDate());
+                //movieDto.setMovieAutids("Chris Buck, Jennifer Lee");
+                List<HashMap<String, String>> directors = new ArrayList<>();
+                
+                if (kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
+                    directors = kmdbDto.getDirectors().getDirector().stream()
+                        .map(d -> {
+                            HashMap<String, String> map = new HashMap<>();
+                            map.put("crewKoNm", d.getDirectorNm());
+                            map.put("crewEnNm", d.getDirectorEnNm());
+                            return map;
+                        })
+                        .collect(Collectors.toList());
+                }
 
-                // 감독 이름 리스트
-                Map<String, String> director1 = Map.of("directorNm", "크리스 벅", "directorEnNm", "Chris Buck");
-                Map<String, String> director2 = Map.of("directorNm", "제니퍼 리", "directorEnNm", "Jennifer Lee");
-                movieDto.setMovieAutidsList(Arrays.asList(director1, director2));
+                movieDto.setMovieAutidsList(directors);
 
-                movieDto.setMovieAutidsNo("0001,0002");
-                movieDto.setMovieWarchGrd("전체관람가");
-                movieDto.setMoviePlot("얼어붙은 왕국을 구하기 위한 자매의 모험");
-                movieDto.setMovieAudienceCnt(10000000L);
-                movieDto.setMovieLanguage("영어");
+                List<KmdbDto.Rating> ratingList = kmdbDto.getRatings().getRating();
+                String grade = "";
+                
+                if (ratingList != null && !ratingList.isEmpty()) {
+                    String raw = ratingList.get(0).getRatingGrade();
+                    // || 기준으로 나누고, 첫 번째 값만 추출
+                    grade = raw != null ? raw.split("\\|\\|")[0] : "";
+                }
+                movieDto.setMovieWarchGrd(grade);
+                KmdbDto.PlotsWrapper plotsWrapper = kmdbDto.getPlots();
+
+                String plotText = "";
+                if (plotsWrapper != null && plotsWrapper.getPlot() != null && !plotsWrapper.getPlot().isEmpty()) {
+                    plotText = plotsWrapper.getPlot().get(0).getPlotText(); // 첫 번째 plot의 내용
+                }
+                movieDto.setMoviePlot(plotText);
+                //movieDto.setMovieAudienceCnt(10000000L);
+                //movieDto.setMovieLanguage("영어");
                 movieDto.setMovieAwards(List.of(Map.of("award", "아카데미 주제가상")));
 
-                movieDto.setShowTypeCd("ST001");
-                movieDto.setMovieTypeCd("MT001");
-                movieDto.setCastId(12345L);
+                movieDto.setShowTypeCd(kmdbDto.getUse());
+                //movieDto.setMovieTypeCd();
+                
                 movieDto.setCastNm("이디나 멘젤");
                 movieDto.setCastKoNm("이디나 멘젤");
                 movieDto.setCastEnNm("Idina Menzel");
                 movieDto.setRoleKoNm("엘사");
                 movieDto.setRoleEnNm("Elsa");
-                movieDto.setCastKBirth("1971-05-30");
-                movieDto.setCastDeath(null);
 
-                movieDto.setFileId(999L);
+
                 movieDto.setMovieImgId(111L);
                 movieDto.setImgType(1L);
 
-                movieDto.setCrewId(888L);
-                movieDto.setCrewKoNm("제니퍼 리");
-                movieDto.setCrewEnNm("Jennifer Lee");
-                movieDto.setCrewRole("감독");
-                movieDto.setCrewBirth("1971-10-22");
-                movieDto.setCrewDeath(null);
-                movieDto.setCrewDirectorYn("Y");
 
                 movieDto.setCountryId(1L);
                 movieDto.setCountryCd(840L);
@@ -143,15 +159,14 @@ public class MovieController {
                 movieDto.setGroComCd("GRC001");
                 movieDto.setComCd("COM001");
 
-                movieDto.setProductionId(10L);
                 movieDto.setProductionKoNm("디즈니 애니메이션 스튜디오");
                 movieDto.setProductionEnNm("Walt Disney Animation Studios");
                 movieDto.setMovieSearchId(10L);
                 movieDto.setSoundTrackId(1010L);
                 // Kobis
-                movieDto.setPrdtStatNm("개봉");
-                movieDto.setTypeNm("장편 애니메이션");
-                movieDto.setGenreAlt("판타지, 어드벤처");
+                movieDto.setPrdtStatNm(kobisDto.getPrdtStatNm());
+                movieDto.setTypeNm(kobisDto.getTypeNm());
+                movieDto.setGenreAlt(kobisDto.getGenreAlt());
 
                 movieDto.setActors(List.of(
                     Map.of("actorNm", "조쉬 개드", "actorEnNm", "Josh Gad")
@@ -164,21 +179,21 @@ public class MovieController {
                 movieDto.setCompanyPartNm("제작");
 
                 // 박스오피스
-                movieDto.setBoxofficeType("일별 박스오피스");
-                movieDto.setShowRange("20240406-20240406");
-                movieDto.setRnum("1");
-                movieDto.setRank("1");
-                movieDto.setRankInten("0");
-                movieDto.setRankOldAndNew("OLD");
-                movieDto.setSalesAmt("123456789");
-                movieDto.setSalesShare("35.6");
-                movieDto.setSalesInten("5000000");
-                movieDto.setSalesChange("4.3");
-                movieDto.setSalesAcc("500000000");
-                movieDto.setAudiCnt("25000");
-                movieDto.setAudiInten("2000");
-                movieDto.setAudiChange("8.7");
-                movieDto.setAudiAcc("1000000");
+                // movieDto.setBoxofficeType("일별 박스오피스");
+                // movieDto.setShowRange("20240406-20240406");
+                // movieDto.setRnum("1");
+                // movieDto.setRank("1");
+                // movieDto.setRankInten("0");
+                // movieDto.setRankOldAndNew("OLD");
+                // movieDto.setSalesAmt("123456789");
+                // movieDto.setSalesShare("35.6");
+                // movieDto.setSalesInten("5000000");
+                // movieDto.setSalesChange("4.3");
+                // movieDto.setSalesAcc("500000000");
+                // movieDto.setAudiCnt("25000");
+                // movieDto.setAudiInten("2000");
+                // movieDto.setAudiChange("8.7");
+                // movieDto.setAudiAcc("1000000");
             }
             if(kmdbDto != null){
                 // Kmdb
@@ -202,7 +217,7 @@ public class MovieController {
             e.printStackTrace();
         }
 
-        return kobisDto;
+        return kmdbList;
     }
 
 }
