@@ -88,6 +88,7 @@ public class KmdbDto {
     private StaffsWrapper staffs;
     private VodsWrapper vods;
     private List<Stat> stat;
+    private String part;
     @JsonProperty("Codes")
     private CodesWrapper codes;
 

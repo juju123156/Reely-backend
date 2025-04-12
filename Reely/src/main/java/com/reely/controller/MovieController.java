@@ -135,48 +135,69 @@ public class MovieController {
                 movieDto.setMoviePlot(plotText);
                 //movieDto.setMovieAudienceCnt(10000000L);
                 //movieDto.setMovieLanguage("영어");
-                movieDto.setMovieAwards(List.of(Map.of("award", "아카데미 주제가상")));
+                List<String> awards = new ArrayList<String>();
+                
+                if("".equals(kmdbDto.getAwards1())){
+                    awards.add(kmdbDto.getAwards1());
+                }
+                if("".equals(kmdbDto.getAwards2())){
+                    awards.add(kmdbDto.getAwards2());
+                }
+                
+                movieDto.setMovieAwards(awards);
 
                 movieDto.setShowTypeCd(kmdbDto.getUse());
                 //movieDto.setMovieTypeCd();
                 
-                movieDto.setCastNm("이디나 멘젤");
-                movieDto.setCastKoNm("이디나 멘젤");
-                movieDto.setCastEnNm("Idina Menzel");
-                movieDto.setRoleKoNm("엘사");
-                movieDto.setRoleEnNm("Elsa");
+                List<HashMap<String, String>> actors = new ArrayList<>();
+                
+                if (kmdbDto.getActors() != null && kmdbDto.getActors().getActor() != null) {
+                    actors = kmdbDto.getActors().getActor().stream()
+                        .map(a -> {
+                            HashMap<String, String> map = new HashMap<>();
+                            map.put("castKoNm", a.getActorNm());
+                            map.put("castEnNm", a.getActorEnNm());
+                            return map;
+                        })
+                        .collect(Collectors.toList());
+                }
 
+                movieDto.setActors(actors);
 
-                movieDto.setMovieImgId(111L);
-                movieDto.setImgType(1L);
+                List<HashMap<String, String>> casts = new ArrayList<>();
+                
+                if (kmdbDto.getStaffs() != null && kmdbDto.getStaffs().getStaff() != null) {
+                    casts = kmdbDto.getStaffs().getStaff().stream()
+                        .map(s -> {
+                            HashMap<String, String> map = new HashMap<>();
+                            map.put("staffKoNm", s.getStaffNm());
+                            map.put("staffEnNm", s.getStaffEnNm());
+                            map.put("roleGrpNm", s.getStaffRoleGroup());
+                            map.put("roleKoNm", s.getStaffRole());
+                            map.put("staffEtc", s.getStaffEtc());
+                            return map;
+                        })
+                        .collect(Collectors.toList());
+                }
 
+                movieDto.setMovieAutidsList(casts);
 
-                movieDto.setCountryId(1L);
-                movieDto.setCountryCd(840L);
-                movieDto.setCountryNm(1L);
-                movieDto.setOriginalCountryYn("Y");
+                //movieDto.setImgType(1L);
 
-                movieDto.setGroComCd("GRC001");
-                movieDto.setComCd("COM001");
-
-                movieDto.setProductionKoNm("디즈니 애니메이션 스튜디오");
-                movieDto.setProductionEnNm("Walt Disney Animation Studios");
-                movieDto.setMovieSearchId(10L);
-                movieDto.setSoundTrackId(1010L);
+                movieDto.setCountryNm(kmdbDto.getNation());
+                //movieDto.setOriginalCountryYn("Y");
+                
+                // 한영 구분 필요
+                movieDto.setProductionKoNm(kmdbDto.getPart());
+                movieDto.setProductionEnNm(kmdbDto.getPart());
                 // Kobis
                 movieDto.setPrdtStatNm(kobisDto.getPrdtStatNm());
                 movieDto.setTypeNm(kobisDto.getTypeNm());
                 movieDto.setGenreAlt(kobisDto.getGenreAlt());
 
-                movieDto.setActors(List.of(
-                    Map.of("actorNm", "조쉬 개드", "actorEnNm", "Josh Gad")
-                ));
-
-                movieDto.setShowTypes("2D");
-                movieDto.setShowTypeGroupNm("디지털");
-                movieDto.setShowTypeNm("일반");
-                movieDto.setWatchGradeNm("전체관람가");
-                movieDto.setCompanyPartNm("제작");
+                movieDto.setShowTypeGroupNm(kmdbDto.getUse());
+                movieDto.setShowTypeNm(kmdbDto.getType());
+                movieDto.setWatchGradeNm(kmdbDto.getRating());
 
                 // 박스오피스
                 // movieDto.setBoxofficeType("일별 박스오피스");
@@ -197,20 +218,30 @@ public class MovieController {
             }
             if(kmdbDto != null){
                 // Kmdb
-                movieDto.setEpisodes("1");
-                movieDto.setRatedYn("Y");
-                movieDto.setRepRatDate("20131207");
-                movieDto.setRatingMain("Y");
-                movieDto.setKeywords("겨울, 자매, 얼음, 노래");
-                movieDto.setPosterUrl("http://example.com/poster.jpg");
-                movieDto.setStillUrl("http://example.com/still.jpg");
-                movieDto.setStaffEtc("기타 정보");
-                movieDto.setVodClass("예고편");
-                movieDto.setVodUrl("http://example.com/trailer.mp4");
-                movieDto.setStatDate("20240406");
-                movieDto.setThemeSong("Let It Go");
-                movieDto.setSoundtrack("OST");
-                movieDto.setFLocation("아렌델 왕국");
+                movieDto.setEpisodes(kmdbDto.getEpisodes());
+                movieDto.setRatedYn(kmdbDto.getRatedYn());
+                movieDto.setRepRatDate(kmdbDto.getRepRatDate());
+                movieDto.setRatingMain(kmdbDto.getRatingMain());
+                movieDto.setKeywords(kmdbDto.getKeywords());
+                movieDto.setPosterUrl(kmdbDto.getPosterUrl());
+                movieDto.setStillUrl(kmdbDto.getStillUrl());
+
+                List<HashMap<String, String>> vods = new ArrayList<>();
+
+                if (kmdbDto.getVods() != null && kmdbDto.getVods().getVod() != null) {
+                    vods = kmdbDto.getVods().getVod().stream()
+                        .map(v -> {
+                            HashMap<String, String> map = new HashMap<>();
+                            map.put("vodClass", v.getVodClass());
+                            map.put("vodUrl", v.getVodUrl());
+                            return map;
+                        })
+                        .collect(Collectors.toList());
+                }
+                movieDto.setVods(vods);
+                movieDto.setThemeSong(kmdbDto.getThemeSong());
+                movieDto.setSoundtrack(kmdbDto.getSoundtrack());
+                movieDto.setFLocation(kmdbDto.getFLocation());
             }
             
         } catch (Exception e) {

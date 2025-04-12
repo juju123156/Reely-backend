@@ -48,7 +48,7 @@ public class MovieDto {
     private String movieLanguage;
 
     // 수상 정보
-    private List<Map<String, String>> movieAwards;
+    private List<String> movieAwards;
 
     // 상영 유형 코드
     private String showTypeCd;
@@ -59,14 +59,17 @@ public class MovieDto {
     // 배우 ID
     private Long castId;
 
-    // 배우 이름
-    private String castNm;
-
     // 배우 한국 이름
     private String castKoNm;
 
     // 배우 영문 이름
     private String castEnNm;
+
+    // 배우 배역 기타정보
+    private String castEtc;
+
+    // 배우 배역 분류
+    private String roleGrpNm;
 
     // 배우 한국 배역
     private String roleKoNm;
@@ -114,10 +117,10 @@ public class MovieDto {
     private Long countryId;
 
     // 제작국가 코드
-    private Long countryCd;
+    private String countryCd;
 
     // 제작국가 이름
-    private Long countryNm;
+    private String countryNm;
 
     // 원산국 여부 (Y/N)
     private String originalCountryYn;
@@ -155,7 +158,7 @@ public class MovieDto {
     private String genreAlt;
 
     // 배우
-    private List<Map<String, String>> actors;
+    private List<HashMap<String, String>> actors;
 
     // 상영형태 구분
     private String showTypes;
@@ -240,17 +243,14 @@ public class MovieDto {
     // 스틸이미지URL
     private String stillUrl;
 
-    // 스텝기타
-    private String staffEtc;
+    // VOD
+    private List<HashMap<String, String>> vods;
 
     // VOD 구분
     private String vodClass;
 
     // VOD URL
     private String vodUrl;
-
-    // 기준일
-    private String statDate;
 
     // 주제곡
     private String themeSong;
