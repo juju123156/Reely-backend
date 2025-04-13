@@ -1,17 +1,21 @@
 package com.reely.dto;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Getter
 @Setter
+@Builder
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class MovieDto {
 
     // 영화 ID

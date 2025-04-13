@@ -53,7 +53,7 @@ public class MovieController {
     }
 
     @GetMapping(value = "/getMovieInfo/{movieNm}" , produces = "application/json")
-    public List<KmdbDto> getMovieInfo(@PathVariable("movieNm") String movieNm) {
+    public MovieDto getMovieInfo(@PathVariable("movieNm") String movieNm) {
         ObjectMapper objectMapper = new ObjectMapper();
         KobisDto kobisDto = new KobisDto();
         KmdbDto kmdbDto = new KmdbDto();
@@ -68,7 +68,9 @@ public class MovieController {
             JSONArray movieList = (JSONArray) movieListResult.get("movieList");
             JSONObject movie = (JSONObject) movieList.get(0);
             kobisDto = objectMapper.readValue(movie.toJSONString(), KobisDto.class);
-            System.out.println("===========================kobis json==========================="+movie);
+            String movieTitle = kobisDto.getMovieNm();
+            String openDt = kobisDto.getOpenDt();
+            //System.out.println("===========================kobis json==========================="+movie);
             String kmJsonData = kmdbFeignClient.getMovieInfo(kmdbKey, movieNm);
             JsonNode root = objectMapper.readTree(kmJsonData);
             // Data 배열의 첫 번째 요소를 가져옴
@@ -91,164 +93,162 @@ public class MovieController {
                             dto.setTitle(cleaned);
                         }
                     }
+                    kmdbDto = kmdbList.stream()
+                    .filter(vo -> movieTitle.equals(vo.getTitle()))
+                    .filter(vo -> openDt.equals(vo.getRepRlsDate()))
+                    .findFirst()                // 첫 번째 요소만 뽑기
+                    .orElse(null);  
                 }
+            // 없으면 null 리턴
+            }
+            System.out.println("===========================kmdb json==========================="+kmdbList.get(2));
+            List<HashMap<String, String>> directors = new ArrayList<>();
+            
+            if (kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
+                directors = kmdbDto.getDirectors().getDirector().stream()
+                    .map(d -> {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("crewKoNm", d.getDirectorNm());
+                        map.put("crewEnNm", d.getDirectorEnNm());
+                        return map;
+                    })
+                    .collect(Collectors.toList());
             }
 
-            if(kobisDto != null){
-                //movieDto.setMovieId("MV12345");
-                movieDto.setMovieKoNm(kmdbDto.getTitle());
-                movieDto.setMovieEnNm(kmdbDto.getTitleOrg());
-                movieDto.setMoviePrDt(kmdbDto.getProdYear());
-                movieDto.setMovieRuntime(Integer.parseInt(kmdbDto.getRuntime()));
-                movieDto.setMovieOpenDt(kmdbDto.getRepRlsDate());
-                //movieDto.setMovieAutids("Chris Buck, Jennifer Lee");
-                List<HashMap<String, String>> directors = new ArrayList<>();
-                
-                if (kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
-                    directors = kmdbDto.getDirectors().getDirector().stream()
-                        .map(d -> {
-                            HashMap<String, String> map = new HashMap<>();
-                            map.put("crewKoNm", d.getDirectorNm());
-                            map.put("crewEnNm", d.getDirectorEnNm());
-                            return map;
-                        })
-                        .collect(Collectors.toList());
-                }
-
-                movieDto.setMovieAutidsList(directors);
-
-                List<KmdbDto.Rating> ratingList = kmdbDto.getRatings().getRating();
-                String grade = "";
-                
-                if (ratingList != null && !ratingList.isEmpty()) {
-                    String raw = ratingList.get(0).getRatingGrade();
-                    // || 기준으로 나누고, 첫 번째 값만 추출
-                    grade = raw != null ? raw.split("\\|\\|")[0] : "";
-                }
-                movieDto.setMovieWarchGrd(grade);
+            List<KmdbDto.Rating> ratingList = new ArrayList<>();
+            String grade = "";
+            
+            if (kmdbDto.getRatings() != null && !kmdbDto.getRatings().getRating().isEmpty()) {
+                ratingList = kmdbDto.getRatings().getRating();
+                String raw = ratingList.get(0).getRatingGrade();
+                // || 기준으로 나누고, 첫 번째 값만 추출
+                grade = raw != null ? raw.split("\\|\\|")[0] : "";
+            }
+            String plotText = "";
+            if (kmdbDto.getPlots() != null){
                 KmdbDto.PlotsWrapper plotsWrapper = kmdbDto.getPlots();
 
-                String plotText = "";
+            
                 if (plotsWrapper != null && plotsWrapper.getPlot() != null && !plotsWrapper.getPlot().isEmpty()) {
                     plotText = plotsWrapper.getPlot().get(0).getPlotText(); // 첫 번째 plot의 내용
                 }
-                movieDto.setMoviePlot(plotText);
-                //movieDto.setMovieAudienceCnt(10000000L);
-                //movieDto.setMovieLanguage("영어");
-                List<String> awards = new ArrayList<String>();
-                
-                if("".equals(kmdbDto.getAwards1())){
-                    awards.add(kmdbDto.getAwards1());
-                }
-                if("".equals(kmdbDto.getAwards2())){
-                    awards.add(kmdbDto.getAwards2());
-                }
-                
-                movieDto.setMovieAwards(awards);
-
-                movieDto.setShowTypeCd(kmdbDto.getUse());
-                //movieDto.setMovieTypeCd();
-                
-                List<HashMap<String, String>> actors = new ArrayList<>();
-                
-                if (kmdbDto.getActors() != null && kmdbDto.getActors().getActor() != null) {
-                    actors = kmdbDto.getActors().getActor().stream()
-                        .map(a -> {
-                            HashMap<String, String> map = new HashMap<>();
-                            map.put("castKoNm", a.getActorNm());
-                            map.put("castEnNm", a.getActorEnNm());
-                            return map;
-                        })
-                        .collect(Collectors.toList());
-                }
-
-                movieDto.setActors(actors);
-
-                List<HashMap<String, String>> casts = new ArrayList<>();
-                
-                if (kmdbDto.getStaffs() != null && kmdbDto.getStaffs().getStaff() != null) {
-                    casts = kmdbDto.getStaffs().getStaff().stream()
-                        .map(s -> {
-                            HashMap<String, String> map = new HashMap<>();
-                            map.put("staffKoNm", s.getStaffNm());
-                            map.put("staffEnNm", s.getStaffEnNm());
-                            map.put("roleGrpNm", s.getStaffRoleGroup());
-                            map.put("roleKoNm", s.getStaffRole());
-                            map.put("staffEtc", s.getStaffEtc());
-                            return map;
-                        })
-                        .collect(Collectors.toList());
-                }
-
-                movieDto.setMovieAutidsList(casts);
-
-                //movieDto.setImgType(1L);
-
-                movieDto.setCountryNm(kmdbDto.getNation());
-                //movieDto.setOriginalCountryYn("Y");
-                
-                // 한영 구분 필요
-                movieDto.setProductionKoNm(kmdbDto.getPart());
-                movieDto.setProductionEnNm(kmdbDto.getPart());
-                // Kobis
-                movieDto.setPrdtStatNm(kobisDto.getPrdtStatNm());
-                movieDto.setTypeNm(kobisDto.getTypeNm());
-                movieDto.setGenreAlt(kobisDto.getGenreAlt());
-
-                movieDto.setShowTypeGroupNm(kmdbDto.getUse());
-                movieDto.setShowTypeNm(kmdbDto.getType());
-                movieDto.setWatchGradeNm(kmdbDto.getRating());
-
-                // 박스오피스
-                // movieDto.setBoxofficeType("일별 박스오피스");
-                // movieDto.setShowRange("20240406-20240406");
-                // movieDto.setRnum("1");
-                // movieDto.setRank("1");
-                // movieDto.setRankInten("0");
-                // movieDto.setRankOldAndNew("OLD");
-                // movieDto.setSalesAmt("123456789");
-                // movieDto.setSalesShare("35.6");
-                // movieDto.setSalesInten("5000000");
-                // movieDto.setSalesChange("4.3");
-                // movieDto.setSalesAcc("500000000");
-                // movieDto.setAudiCnt("25000");
-                // movieDto.setAudiInten("2000");
-                // movieDto.setAudiChange("8.7");
-                // movieDto.setAudiAcc("1000000");
             }
-            if(kmdbDto != null){
-                // Kmdb
-                movieDto.setEpisodes(kmdbDto.getEpisodes());
-                movieDto.setRatedYn(kmdbDto.getRatedYn());
-                movieDto.setRepRatDate(kmdbDto.getRepRatDate());
-                movieDto.setRatingMain(kmdbDto.getRatingMain());
-                movieDto.setKeywords(kmdbDto.getKeywords());
-                movieDto.setPosterUrl(kmdbDto.getPosterUrl());
-                movieDto.setStillUrl(kmdbDto.getStillUrl());
 
-                List<HashMap<String, String>> vods = new ArrayList<>();
-
-                if (kmdbDto.getVods() != null && kmdbDto.getVods().getVod() != null) {
-                    vods = kmdbDto.getVods().getVod().stream()
-                        .map(v -> {
-                            HashMap<String, String> map = new HashMap<>();
-                            map.put("vodClass", v.getVodClass());
-                            map.put("vodUrl", v.getVodUrl());
-                            return map;
-                        })
-                        .collect(Collectors.toList());
-                }
-                movieDto.setVods(vods);
-                movieDto.setThemeSong(kmdbDto.getThemeSong());
-                movieDto.setSoundtrack(kmdbDto.getSoundtrack());
-                movieDto.setFLocation(kmdbDto.getFLocation());
+            List<String> awards = new ArrayList<String>();
+            
+            if("".equals(kmdbDto.getAwards1())){
+                awards.add(kmdbDto.getAwards1());
             }
+            if("".equals(kmdbDto.getAwards2())){
+                awards.add(kmdbDto.getAwards2());
+            }
+
+            List<HashMap<String, String>> actors = new ArrayList<>();
+            
+            if (kmdbDto.getActors() != null && kmdbDto.getActors().getActor() != null) {
+                actors = kmdbDto.getActors().getActor().stream()
+                    .map(a -> {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("castKoNm", a.getActorNm());
+                        map.put("castEnNm", a.getActorEnNm());
+                        return map;
+                    })
+                    .collect(Collectors.toList());
+            }
+
+            List<HashMap<String, String>> casts = new ArrayList<>();
+            
+            if (kmdbDto.getStaffs() != null && kmdbDto.getStaffs().getStaff() != null) {
+                casts = kmdbDto.getStaffs().getStaff().stream()
+                    .map(s -> {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("staffKoNm", s.getStaffNm());
+                        map.put("staffEnNm", s.getStaffEnNm());
+                        map.put("roleGrpNm", s.getStaffRoleGroup());
+                        map.put("roleKoNm", s.getStaffRole());
+                        map.put("staffEtc", s.getStaffEtc());
+                        return map;
+                    })
+                    .collect(Collectors.toList());
+            }
+                
+            List<HashMap<String, String>> vods = new ArrayList<>();
+    
+            if (kmdbDto.getVods() != null && kmdbDto.getVods().getVod() != null) {
+                vods = kmdbDto.getVods().getVod().stream()
+                    .map(v -> {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put("vodClass", v.getVodClass());
+                        map.put("vodUrl", v.getVodUrl());
+                        return map;
+                    })
+                    .collect(Collectors.toList());
+            }
+
+            movieDto = MovieDto.builder()
+                               .movieKoNm(kmdbDto.getTitle() != null ? kmdbDto.getTitle(): "")
+                               .movieEnNm(kmdbDto.getTitleOrg() != null ? kmdbDto.getTitleOrg(): "")
+                               .moviePrDt(kmdbDto.getProdYear() != null ? kmdbDto.getProdYear(): "")
+                               .movieRuntime(kmdbDto.getRuntime() != null ? Integer.parseInt(kmdbDto.getRuntime()): null)
+                               .movieOpenDt(kmdbDto.getRepRlsDate() != null ? kmdbDto.getRepRlsDate(): "")
+                               .movieAutidsList(directors)
+                               .movieWarchGrd(grade)
+                               .movieOpenDt(kmdbDto.getRepRlsDate() != null ? kmdbDto.getRepRlsDate(): "")
+                               .moviePlot(plotText)
+                               .movieAwards(awards)
+                               .showTypeCd(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
+                               .actors(actors)
+                               .movieAutidsList(casts)
+                               .countryNm(kmdbDto.getNation() != null ? kmdbDto.getNation(): "")
+                               .productionKoNm(kmdbDto.getCompany() != null ? kmdbDto.getCompany(): "")
+                               .productionEnNm(kmdbDto.getPart() != null ? kmdbDto.getPart(): "")
+                               .prdtStatNm(kobisDto.getPrdtStatNm() != null ? kobisDto.getPrdtStatNm(): "")
+                               .typeNm(kobisDto.getTypeNm() != null ? kobisDto.getTypeNm(): "")
+                               .genreAlt(kobisDto.getGenreAlt() != null ? kobisDto.getGenreAlt(): "")
+                               .showTypeGroupNm(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
+                               .showTypeNm(kmdbDto.getType() != null ? kmdbDto.getType(): "")
+                               .watchGradeNm(kmdbDto.getRating() != null ? kmdbDto.getRating(): "")
+                               .episodes(kmdbDto.getEpisodes() != null ? kmdbDto.getEpisodes(): "")
+                               .ratedYn(kmdbDto.getRatedYn() != null ? kmdbDto.getRatedYn(): "")
+                               .repRatDate(kmdbDto.getRepRatDate() != null ? kmdbDto.getRepRatDate(): "")
+                               .ratingMain(kmdbDto.getRatingMain() != null ? kmdbDto.getRatingMain(): "")
+                               .keywords(kmdbDto.getKeywords() != null ? kmdbDto.getKeywords(): "")
+                               .posterUrl(kmdbDto.getPosters() != null ? kmdbDto.getPosters(): "")
+                               .stillUrl(kmdbDto.getStlls() != null ? kmdbDto.getStlls(): "")
+                               .vods(vods)
+                               .themeSong(kmdbDto.getThemeSong() != null ? kmdbDto.getThemeSong(): "")
+                               .soundtrack(kmdbDto.getSoundtrack() != null ? kmdbDto.getSoundtrack(): "")
+                               .fLocation(kmdbDto.getFLocation() != null ? kmdbDto.getFLocation(): "")
+                               .build();
+
+            //movieDto.setOriginalCountryYn("Y");
+            
+            // 한영 구분 필요
+            //movieDto.setProductionKoNm(kmdbDto.getCompany());
+            //movieDto.setProductionEnNm(kmdbDto.getPart());
+
+            // 박스오피스
+            // movieDto.setBoxofficeType("일별 박스오피스");
+            // movieDto.setShowRange("20240406-20240406");
+            // movieDto.setRnum("1");
+            // movieDto.setRank("1");
+            // movieDto.setRankInten("0");
+            // movieDto.setRankOldAndNew("OLD");
+            // movieDto.setSalesAmt("123456789");
+            // movieDto.setSalesShare("35.6");
+            // movieDto.setSalesInten("5000000");
+            // movieDto.setSalesChange("4.3");
+            // movieDto.setSalesAcc("500000000");
+            // movieDto.setAudiCnt("25000");
+            // movieDto.setAudiInten("2000");
+            // movieDto.setAudiChange("8.7");
+            // movieDto.setAudiAcc("1000000");
             
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace();            
         }
 
-        return kmdbList;
+        return movieDto;
     }
 
 }
