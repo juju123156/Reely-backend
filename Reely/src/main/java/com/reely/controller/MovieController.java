@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.net.URLDecoder;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -261,7 +262,7 @@ public class MovieController {
                     : Arrays.asList(posters.split("\\|"));
             for (int i = 0; i < posterList.size(); i++) {
                 String posterUrl = posterList.get(i);
-                String fileName = movieDto.getMovieKoNm() + (i+1);
+                String fileName = movieDto.getMovieKoNm().replaceAll("\\s+", "_")+(i+1); // 공백 → 언더스코어 + (i+1);
                 CommonUtil.fileDownloader(posterUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/poster", fileName);
             }
 
@@ -271,9 +272,21 @@ public class MovieController {
                     : Arrays.asList(stills.split("\\|"));
             for (int i = 0; i < stillsList.size(); i++) {
                 String stillsUrl = stillsList.get(i);
-                String fileName = movieDto.getMovieKoNm() + (i+1);
+                String fileName = movieDto.getMovieKoNm().replaceAll("\\s+", "_")+(i+1); // 공백 → 언더스코어 + (i+1);
                 CommonUtil.fileDownloader(stillsUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/stills", fileName);
             }
+            int i = 1;
+            for (HashMap<String, String> vod : vods) {
+                String vodUrl = vod.get("vodUrl");
+                String originalUrl = vodUrl.replaceAll("https://www\\.kmdb\\.or\\.kr/trailer/trailerPlayPop\\?pFileNm=(.+)", 
+                "https://www.kmdb.or.kr/trailer/play/$1");
+                //String getVodUrl = CommonUtil.extractRealMp4Url(vodUrlHtml); // 메서드 이름 수정
+                //String decodedUrl = URLDecoder.decode(getVodUrl, "UTF-8");
+                String fileName = movieDto.getMovieKoNm().replaceAll("\\s+", "_")+i;
+                CommonUtil.vodFileDownloader(originalUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/vods", fileName);
+                i += 1;
+            }
+
             
         } catch (Exception e) {
             e.printStackTrace();            
