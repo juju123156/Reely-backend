@@ -3,6 +3,7 @@ package com.reely.controller;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reely.common.util.CommonUtil;
 import com.reely.dto.KmdbDto;
 import com.reely.dto.KobisDto;
 import com.reely.dto.MovieDto;
@@ -243,6 +245,35 @@ public class MovieController {
             // movieDto.setAudiInten("2000");
             // movieDto.setAudiChange("8.7");
             // movieDto.setAudiAcc("1000000");
+
+            
+
+
+            // movie 테이블에 저장
+            // cast 테이블에 저장
+            // cast_movie 테이블에 저장
+            // crew 테이블에 저장
+            // crew_movie 테이블에 저장
+            // file 테이블에 저장
+            String posters = movieDto.getPosterUrl();
+            List<String> posterList = (posters == null || posters.isEmpty())
+                    ? new ArrayList<>()
+                    : Arrays.asList(posters.split("\\|"));
+            for (int i = 0; i < posterList.size(); i++) {
+                String posterUrl = posterList.get(i);
+                String fileName = movieDto.getMovieKoNm() + (i+1);
+                CommonUtil.fileDownloader(posterUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/poster", fileName);
+            }
+
+            String stills = movieDto.getStillUrl();
+            List<String> stillsList = (stills == null || stills.isEmpty())
+                    ? new ArrayList<>()
+                    : Arrays.asList(stills.split("\\|"));
+            for (int i = 0; i < stillsList.size(); i++) {
+                String stillsUrl = stillsList.get(i);
+                String fileName = movieDto.getMovieKoNm() + (i+1);
+                CommonUtil.fileDownloader(stillsUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/stills", fileName);
+            }
             
         } catch (Exception e) {
             e.printStackTrace();            
