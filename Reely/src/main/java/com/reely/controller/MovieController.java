@@ -27,22 +27,27 @@ import com.reely.dto.KobisDto;
 import com.reely.dto.MovieDto;
 import com.reely.service.KmdbMovieFeignClient;
 import com.reely.service.KobisMovieFeignClient;
+import com.reely.service.TmdbMovieFeignClient;
 
 @RestController
 @RequestMapping("/api")
 public class MovieController {
+
+    private final TmdbMovieFeignClient TmdbMovieClient;
     
     private final KobisMovieFeignClient kobisFeignClient;
     private final KmdbMovieFeignClient kmdbFeignClient;
     String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
     String kmdbKey = "MZ53N9719N5IH6Z7G2R9";
+    String tmdbKey = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5MWJlODU2OGFhYzg4OGMyMzYxOTliMjBmNTBiZWFhNiIsIm5iZiI6MTc0NDYxNzA1Ni43NjQsInN1YiI6IjY3ZmNiZTYwZWMyMmJhM2I0OWQ5ODg0YyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SH_t-hN5ptu6cBiLvpK0DSU0U56ZKWwaXUIchYFkMQM";
 
-    public MovieController(KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient) {
+    public MovieController(KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient) {
         this.kobisFeignClient = kobisFeignClient;
-        this.kmdbFeignClient= kmdbFeignClient;
+        this.kmdbFeignClient = kmdbFeignClient;
+        this.tmdbFeignClient = tmdbFeignClient;
     }
     
-    @GetMapping(value = "/getDailyBoxOfficeList" , produces = "application/json")
+    @GetMapping(value = "/getDailyBoxOfficeList", produces = "application/json")
     public String getDailyBoxOfficeList(KobisDto kobisDto) {
         LocalDate today = LocalDate.now();
         // 오늘 날짜로부터 1일전
