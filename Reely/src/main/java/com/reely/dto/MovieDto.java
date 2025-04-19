@@ -247,6 +247,10 @@ public class MovieDto {
     // 스틸이미지URL
     private String stillUrl;
 
+    private String filePath;
+
+    private String fileTypCd;
+
     // VOD
     private List<HashMap<String, String>> vods;
 
@@ -264,8 +268,6 @@ public class MovieDto {
 
     // 촬영장소
     private String fLocation;
-
-    private String logoPath;
 
     // 영화 제작사 국가
     private String productionCountry;

@@ -28,4 +28,19 @@
             )
     </insert>
 
+    <insert id="insertFileInfo" parameterType="Movie">
+        insert into file
+            (
+               file_path
+             , file_upload_dt
+             , file_typ_cd
+            )
+        values
+            (
+               #{filePath}
+             , NOW()
+             , #{fileTypCd}
+            )
+    </insert>
+
 </mapper>

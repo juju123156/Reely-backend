@@ -9,5 +9,6 @@ public interface MovieMapper {
 
     int insertCountryInfo(MovieDto movieDto);
     int insertProductionInfo(MovieDto movieDto);
+    int insertFileInfo(MovieDto movieDto);
     
 }

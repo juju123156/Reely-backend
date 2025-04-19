@@ -39,7 +39,8 @@ public class MovieController {
     private final KobisMovieFeignClient kobisFeignClient;
     private final KmdbMovieFeignClient kmdbFeignClient;
     private final TmdbMovieFeignClient tmdbMovieClient;
-    
+    // tmdb 이미지 url
+    private static final String imageBaseUrl = "https://image.tmdb.org/t/p/original";
     private final MovieMapper movieMapper;
 
     String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
@@ -52,6 +53,9 @@ public class MovieController {
         this.kmdbFeignClient = kmdbFeignClient;
         this.tmdbMovieClient = tmdbFeignClient;
     }
+
+    String localFilePath = "/Users";
+    String filePath = "/Reely/volumes";
     
     @GetMapping(value = "/getDailyBoxOfficeList", produces = "application/json")
     public String getDailyBoxOfficeList(KobisDto kobisDto) {
@@ -273,8 +277,13 @@ public class MovieController {
                     : Arrays.asList(posters.split("\\|"));
             for (int i = 0; i < posterList.size(); i++) {
                 String posterUrl = posterList.get(i);
-                String fileName = movieDto.getMovieKoNm().replaceAll("\\s+", "_")+(i+1); // 공백 → 언더스코어 + (i+1);
-                CommonUtil.fileDownloader(posterUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/poster", fileName);
+                String fileExtension = CommonUtil.getExtension(posterUrl);
+                String fileName = CommonUtil.generateFileName(fileExtension);
+                String fPath = localFilePath+filePath+"/poster"; 
+                CommonUtil.fileDownloader(posterUrl, fPath, fileName);
+                movieDto.setFilePath(fPath+"/"+fileName);
+                movieDto.setFileTypCd("001");
+                movieMapper.insertFileInfo(movieDto);
             }
 
             String stills = movieDto.getStillUrl();
@@ -283,21 +292,31 @@ public class MovieController {
                     : Arrays.asList(stills.split("\\|"));
             for (int i = 0; i < stillsList.size(); i++) {
                 String stillsUrl = stillsList.get(i);
-                String fileName = movieDto.getMovieKoNm().replaceAll("\\s+", "_")+(i+1); // 공백 → 언더스코어 + (i+1);
-                CommonUtil.fileDownloader(stillsUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/stills", fileName);
+                String fileExtension = CommonUtil.getExtension(stillsUrl);
+                String fileName = CommonUtil.generateFileName(fileExtension);
+                String fPath = localFilePath+filePath+"/stills"; 
+                CommonUtil.fileDownloader(stillsUrl, fPath, fileName);
+                movieDto.setFilePath(fPath+"/"+fileName);
+                movieDto.setFileTypCd("002");
+                movieMapper.insertFileInfo(movieDto);
             }
-            int i = 1;
             for (HashMap<String, String> vod : vods) {
                 String vodUrl = vod.get("vodUrl");
                 String originalUrl = vodUrl.replaceAll("https://www\\.kmdb\\.or\\.kr/trailer/trailerPlayPop\\?pFileNm=(.+)", 
                 "https://www.kmdb.or.kr/trailer/play/$1");
+                String fileExtension = CommonUtil.getExtension(originalUrl);
+                String fileName = CommonUtil.generateFileName(fileExtension);
+                String fPath = localFilePath+filePath+"/vods"; 
                 //String getVodUrl = CommonUtil.extractRealMp4Url(vodUrlHtml); // 메서드 이름 수정
                 //String decodedUrl = URLDecoder.decode(getVodUrl, "UTF-8");
-                String fileName = movieDto.getMovieKoNm().replaceAll("\\s+", "_")+i;
-                CommonUtil.vodFileDownloader(originalUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/vods", fileName);
-                i += 1;
+                CommonUtil.vodFileDownloader(originalUrl, fPath, fileName);
+                movieDto.setFilePath(fPath+"/"+fileName);
+                movieDto.setFileTypCd("003");
+                movieMapper.insertFileInfo(movieDto);
+
             }
-            
+            movieDto.setFilePath("");
+            movieDto.setFileTypCd("");
             
         } catch (Exception e) {
             e.printStackTrace();            
@@ -323,9 +342,18 @@ public class MovieController {
             List<ProductionCompany> pdCompList = tmdbDto.getProductionCompanies();
 
             for (ProductionCompany pd : pdCompList){
-                movieDto.setFileId(pd.getLogoPath());
+                //movieDto.setFileId(pd.getLogoPath());
                 movieDto.setProductionEnNm(pd.getName());
                 movieDto.setProductionCountry(pd.getOriginCountry());
+                String tmImgUrl = imageBaseUrl+pd.getLogoPath();
+
+                String fileExtension = CommonUtil.getExtension(tmImgUrl);
+                String fileName = CommonUtil.generateFileName(fileExtension);
+                String fPath = localFilePath+filePath+"/logo"; 
+                CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
+                movieDto.setFilePath(fPath+"/"+fileName);
+                movieDto.setFileTypCd("004");
+                movieMapper.insertFileInfo(movieDto);
 
                 movieMapper.insertProductionInfo(movieDto);
             }
