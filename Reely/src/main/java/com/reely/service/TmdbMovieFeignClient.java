@@ -3,6 +3,7 @@ package com.reely.service;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name="TmdbMovieClient", url="https://api.themoviedb.org/3")
@@ -11,7 +12,7 @@ public interface TmdbMovieFeignClient {
     // 영화 검색
     @GetMapping("/search/movie")
     String searchMovie(
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam("query") String query,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language,
         @RequestParam(value = "page", defaultValue = "1") int page
@@ -21,7 +22,7 @@ public interface TmdbMovieFeignClient {
     @GetMapping("/movie/{movie_id}")
     String getMovieDetails(
         @PathVariable("movie_id") String movieId,
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language,
         @RequestParam(value = "append_to_response", defaultValue = "videos,credits,images") String appendToResponse
     );
@@ -29,7 +30,7 @@ public interface TmdbMovieFeignClient {
     // 인기 영화 목록
     @GetMapping("/movie/popular")
     String getPopularMovies(
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language,
         @RequestParam(value = "page", defaultValue = "1") int page
     );
@@ -37,7 +38,7 @@ public interface TmdbMovieFeignClient {
     // 현재 상영중인 영화
     @GetMapping("/movie/now_playing")
     String getNowPlayingMovies(
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language,
         @RequestParam(value = "page", defaultValue = "1") int page
     );
@@ -45,7 +46,7 @@ public interface TmdbMovieFeignClient {
     // 상영 예정 영화
     @GetMapping("/movie/upcoming")
     String getUpcomingMovies(
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language,
         @RequestParam(value = "page", defaultValue = "1") int page
     );
@@ -53,7 +54,7 @@ public interface TmdbMovieFeignClient {
     // 인물 검색
     @GetMapping("/search/person")
     String searchPerson(
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam("query") String query,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language,
         @RequestParam(value = "page", defaultValue = "1") int page
@@ -63,7 +64,7 @@ public interface TmdbMovieFeignClient {
     @GetMapping("/person/{person_id}")
     String getPersonDetails(
         @PathVariable("person_id") String personId,
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language,
         @RequestParam(value = "append_to_response", defaultValue = "movie_credits,images") String appendToResponse
     );
@@ -72,7 +73,7 @@ public interface TmdbMovieFeignClient {
     @GetMapping("/person/{person_id}/movie_credits")
     String getPersonMovieCredits(
         @PathVariable("person_id") String personId,
-        @RequestParam("api_key") String apiKey,
+        @RequestHeader("Authorization") String bearerToken,
         @RequestParam(value = "language", defaultValue = "ko-KR") String language
     );
 
@@ -80,6 +81,6 @@ public interface TmdbMovieFeignClient {
     @GetMapping("/person/{person_id}/images")
     String getPersonImages(
         @PathVariable("person_id") String personId,
-        @RequestParam("api_key") String apiKey
+        @RequestHeader("Authorization") String bearerToken
     );
 }

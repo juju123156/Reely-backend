@@ -25,6 +25,9 @@ import com.reely.common.util.CommonUtil;
 import com.reely.dto.KmdbDto;
 import com.reely.dto.KobisDto;
 import com.reely.dto.MovieDto;
+import com.reely.dto.TmdbDto;
+import com.reely.dto.TmdbDto.ProductionCompany;
+import com.reely.mapper.MovieMapper;
 import com.reely.service.KmdbMovieFeignClient;
 import com.reely.service.KobisMovieFeignClient;
 import com.reely.service.TmdbMovieFeignClient;
@@ -33,18 +36,21 @@ import com.reely.service.TmdbMovieFeignClient;
 @RequestMapping("/api")
 public class MovieController {
 
-    private final TmdbMovieFeignClient TmdbMovieClient;
-    
     private final KobisMovieFeignClient kobisFeignClient;
     private final KmdbMovieFeignClient kmdbFeignClient;
+    private final TmdbMovieFeignClient tmdbMovieClient;
+    
+    private final MovieMapper movieMapper;
+
     String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
     String kmdbKey = "MZ53N9719N5IH6Z7G2R9";
     String tmdbKey = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5MWJlODU2OGFhYzg4OGMyMzYxOTliMjBmNTBiZWFhNiIsIm5iZiI6MTc0NDYxNzA1Ni43NjQsInN1YiI6IjY3ZmNiZTYwZWMyMmJhM2I0OWQ5ODg0YyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SH_t-hN5ptu6cBiLvpK0DSU0U56ZKWwaXUIchYFkMQM";
 
-    public MovieController(KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient) {
+    public MovieController(MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient) {
+        this.movieMapper = movieMapper;
         this.kobisFeignClient = kobisFeignClient;
         this.kmdbFeignClient = kmdbFeignClient;
-        this.tmdbFeignClient = tmdbFeignClient;
+        this.tmdbMovieClient = tmdbFeignClient;
     }
     
     @GetMapping(value = "/getDailyBoxOfficeList", produces = "application/json")
@@ -109,7 +115,7 @@ public class MovieController {
                 }
             // 없으면 null 리턴
             }
-            System.out.println("===========================kmdb json==========================="+kmdbList.get(2));
+            //System.out.println("===========================kmdb json==========================="+kmdbList.get(2));
             List<HashMap<String, String>> directors = new ArrayList<>();
             
             if (kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
@@ -207,8 +213,8 @@ public class MovieController {
                                .showTypeCd(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
                                .actors(actors)
                                .movieAutidsList(casts)
-                               .countryNm(kmdbDto.getNation() != null ? kmdbDto.getNation(): "")
-                               .productionKoNm(kmdbDto.getCompany() != null ? kmdbDto.getCompany(): "")
+                               //.countryNm(kmdbDto.getNation() != null ? kmdbDto.getNation(): "")
+                               //.productionKoNm(kmdbDto.getCompany() != null ? kmdbDto.getCompany(): "")
                                .productionEnNm(kmdbDto.getPart() != null ? kmdbDto.getPart(): "")
                                .prdtStatNm(kobisDto.getPrdtStatNm() != null ? kobisDto.getPrdtStatNm(): "")
                                .typeNm(kobisDto.getTypeNm() != null ? kobisDto.getTypeNm(): "")
@@ -291,12 +297,43 @@ public class MovieController {
                 CommonUtil.vodFileDownloader(originalUrl, "/Users/gimjuhyeon/Documents/Reely/volumes/vods", fileName);
                 i += 1;
             }
-
+            
             
         } catch (Exception e) {
             e.printStackTrace();            
         }
 
+        try {
+            String tmJsonData = tmdbMovieClient.searchMovie("Bearer " + tmdbKey, movieDto.getMovieEnNm(), "en-US", 1);
+            com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(tmJsonData);
+            com.fasterxml.jackson.databind.JsonNode results = jsonNode.get("results");
+
+            com.fasterxml.jackson.databind.JsonNode item = results.get(0);
+            String tmMovieId = item.get("id").asText();
+            String language = item.get("original_language").asText();
+            movieDto.setCountryCd(language);
+            // 국가 저장
+            //movieMapper.insertCountryInfo(movieDto);
+            
+            String tmJsonDetail = tmdbMovieClient.getMovieDetails(tmMovieId,"Bearer " + tmdbKey, "en-US", "images");
+            JSONObject jsonObject = (JSONObject) parser.parse(tmJsonDetail);
+            TmdbDto tmdbDto = objectMapper.readValue(jsonObject.toJSONString(), TmdbDto.class);
+            System.out.println("===========================tmdb json===========================" + tmdbDto.toString());
+
+            List<ProductionCompany> pdCompList = tmdbDto.getProductionCompanies();
+
+            for (ProductionCompany pd : pdCompList){
+                movieDto.setFileId(pd.getLogoPath());
+                movieDto.setProductionEnNm(pd.getName());
+                movieDto.setProductionCountry(pd.getOriginCountry());
+
+                movieMapper.insertProductionInfo(movieDto);
+            }
+
+
+        }catch(Exception e){
+            e.printStackTrace();  
+        }
         return movieDto;
     }
 

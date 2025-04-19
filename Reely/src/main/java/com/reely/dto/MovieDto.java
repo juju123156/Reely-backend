@@ -265,5 +265,9 @@ public class MovieDto {
     // 촬영장소
     private String fLocation;
 
+    private String logoPath;
+
+    // 영화 제작사 국가
+    private String productionCountry;
 
 }
