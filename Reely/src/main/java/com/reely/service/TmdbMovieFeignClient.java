@@ -83,4 +83,12 @@ public interface TmdbMovieFeignClient {
         @PathVariable("person_id") String personId,
         @RequestHeader("Authorization") String bearerToken
     );
+
+    // 영화 출연진 정보
+    @GetMapping("/movie/{movie_id}/credits")
+    String getMovieCredits(
+        @PathVariable("movie_id") String movieId,
+        @RequestHeader("Authorization") String bearerToken,
+        @RequestParam(value = "language", defaultValue = "ko-KR") String language
+    );
 }

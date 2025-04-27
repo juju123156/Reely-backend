@@ -5,42 +5,149 @@
     <insert id="insertCountryInfo" parameterType="Movie">
         insert into movie_country
             (
-             country_cd
+             country_cd,
+             frst_reg_date
             )
         values
             (
-             #{countryCd}
+             #{countryCd},
+             NOW()
             )
     </insert>
 
     <insert id="insertProductionInfo" parameterType="Movie">
-        insert into movie_production
+        insert into production
             (
-               production_nm
-             , logo_file_id
-             , original_country
+             production_ko_nm,
+             production_en_Nm,
+             logo_file_id,
+             country_cd,
+             frst_reg_date
             )
         values
             (
-              #{productionEnNm}
-            , #{logoFileId}
-            , #{productionCountry}
+              #{productionKoNm},
+              #{productionEnNm},
+              #{productionLogoFileId},
+              #{countryCd},
+              NOW()
             )
     </insert>
 
     <insert id="insertFileInfo" parameterType="Movie">
         insert into file
             (
-               file_path
-             , file_upload_dt
-             , file_typ_cd
+             file_id,
+             file_path,
+             file_upload_dt,
+             file_typ_cd,
+             frst_reg_date
             )
         values
             (
-               #{filePath}
-             , NOW()
-             , #{fileTypCd}
+             #{fileId},
+             #{filePath},
+             NOW(),
+             #{fileTypCd},
+             NOW()
             )
     </insert>
+
+       <!-- 배우 정보 저장 -->
+       <insert id="insertCastInfo" parameterType="com.reely.dto.MovieDto">
+        INSERT INTO cast (
+            cast_ko_nm,
+            cast_en_nm,
+            role_ko_nm,
+            role_en_nm,
+            file_id,
+            role_grp_nm,
+            cast_etc,
+            cast_birth,
+            cast_death,
+            country_cd
+            frst_reg_date
+        ) VALUES (
+            #{castKoNm},
+            #{castEnNm},
+            #{roleKoNm},
+            #{roleEnNm},
+            #{fileId},
+            #{roleGrpNm},
+            #{castEtc}
+            #{castBirth},
+            #{castDeath},
+            #{countryCd},
+            NOW()
+        )
+    </insert>
+    
+    <!-- 배우-영화 관계 저장 -->
+    <insert id="insertCastMovieInfo" parameterType="com.reely.dto.MovieDto">
+        INSERT INTO movie_cast (
+            cast_id,
+            movie_id,
+            frst_reg_date
+        ) VALUES (
+            #{castId},
+            #{movieId},
+            NOW()
+        )
+    </insert>
+    
+    <!-- 스태프 정보 저장 -->
+    <insert id="insertCrewInfo" parameterType="com.reely.dto.MovieDto">
+        INSERT INTO crew (
+            crew_ko_nm,
+            crew_en_nm,
+            crew_role,
+            crew_birth,
+            crew_death,
+            crew_director_yn,
+            frst_reg_date
+        ) VALUES (
+            #{crewKoNm},
+            #{crewEnNm},
+            #{crewRole},
+            #{crewBirth},
+            #{crewDeath},
+            #{crewDirectorYn},
+            NOW()
+        )
+    </insert>
+    
+    <!-- 스태프-영화 관계 저장 -->
+    <insert id="insertCrewMovieInfo" parameterType="com.reely.dto.MovieDto">
+        INSERT INTO movie_crew (
+            crew_id,
+            movie_id,
+            role_grp_nm,
+            crew_role,
+            frst_reg_date
+        ) VALUES (
+            #{crewId},
+            #{movieId},
+            #{roleGrpNm},
+            #{crewRole},
+            NOW()
+        )
+    </insert>
+
+    <select id="getMovieId" resultType="java.lang.Integer">
+        SELECT nextval('movie_id_seq')
+    </select>
+
+
+    <select id="getCrewId" resultType="java.lang.Integer">
+        SELECT nextval('crew_id_seq')
+    </select>
+
+    <select id="getCastId" resultType="java.lang.Integer">
+        SELECT nextval('cast_id_seq')
+    </select>
+
+    <select id="getFileId" resultType="java.lang.Integer">
+        SELECT nextval('file_id_seq')
+    </select>
 
 </mapper>

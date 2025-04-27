@@ -2,12 +2,10 @@ package com.reely.common.util;
 
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 
 public class CommonUtil {
@@ -58,6 +56,23 @@ public class CommonUtil {
             System.err.println("다운로드 실패: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public static String generateFileName(String extension) {
+        // 오늘 날짜 포맷: yyyyMMdd
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        // UUID 생성
+        String uuid = UUID.randomUUID().toString();
+        // 확장자 포함한 파일 이름 생성
+        return date + "_" + uuid + "." + extension;
+    }
+
+    public static String getExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex != -1 && dotIndex < fileName.length() - 1) {
+            return fileName.substring(dotIndex + 1);
+        }
+        return ""; // 확장자가 없거나 잘못된 경우
     }
     
 }
