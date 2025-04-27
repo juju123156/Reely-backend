@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +15,15 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,9 +33,11 @@ import com.reely.dto.KobisDto;
 import com.reely.dto.MovieDto;
 import com.reely.dto.TmdbDto;
 import com.reely.dto.TmdbDto.ProductionCompany;
+import com.reely.dto.SpotifyDto;
 import com.reely.mapper.MovieMapper;
 import com.reely.service.KmdbMovieFeignClient;
 import com.reely.service.KobisMovieFeignClient;
+import com.reely.service.SpotifyFeignClient;
 import com.reely.service.TmdbMovieFeignClient;
 
 @RestController
@@ -39,6 +47,7 @@ public class MovieController {
     private final KobisMovieFeignClient kobisFeignClient;
     private final KmdbMovieFeignClient kmdbFeignClient;
     private final TmdbMovieFeignClient tmdbMovieClient;
+    private final SpotifyFeignClient spotifyClient;
     // tmdb 이미지 url
     private static final String imageBaseUrl = "https://image.tmdb.org/t/p/original";
     private final MovieMapper movieMapper;
@@ -46,12 +55,15 @@ public class MovieController {
     String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
     String kmdbKey = "MZ53N9719N5IH6Z7G2R9";
     String tmdbKey = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5MWJlODU2OGFhYzg4OGMyMzYxOTliMjBmNTBiZWFhNiIsIm5iZiI6MTc0NDYxNzA1Ni43NjQsInN1YiI6IjY3ZmNiZTYwZWMyMmJhM2I0OWQ5ODg0YyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SH_t-hN5ptu6cBiLvpK0DSU0U56ZKWwaXUIchYFkMQM";
+    String spotifyClientId = "5b2c9e587cf74849aa331f4c8cf79a9f";
+    String spotifyClientSecret = "5b2c9e587cf74849aa331f4c8cf79a9f"; // 실제 클라이언트 시크릿으로 교체 필요
 
-    public MovieController(MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient) {
+    public MovieController(MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient, SpotifyFeignClient spotifyClient) {
         this.movieMapper = movieMapper;
         this.kobisFeignClient = kobisFeignClient;
         this.kmdbFeignClient = kmdbFeignClient;
         this.tmdbMovieClient = tmdbFeignClient;
+        this.spotifyClient = spotifyClient;
     }
 
     String localFilePath = "/Users";
@@ -429,6 +441,53 @@ public class MovieController {
 
 
         return movieDto;
+    }
+
+    @GetMapping(value = "/getMovieOst/{movieNm}", produces = "application/json")
+    public SpotifyDto getMovieOst(@PathVariable("movieNm") String movieNm) {
+        try {
+            // Spotify 액세스 토큰 가져오기
+            String accessToken = getSpotifyAccessToken();
+            
+            // 영화 OST 검색
+            String query = movieNm + " soundtrack";
+            String jsonResponse = spotifyClient.searchTracks(
+                "Bearer " + accessToken,
+                query,
+                "track",
+                10
+            );
+            
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(jsonResponse, SpotifyDto.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String getSpotifyAccessToken() throws Exception {
+        String credentials = spotifyClientId + ":" + spotifyClientSecret;
+        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Basic " + encodedCredentials);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        
+        Map<String, String> map = new HashMap<>();
+        map.put("grant_type", spotifyClientSecret);
+        
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.postForEntity(
+            "https://accounts.spotify.com/api/token",
+            request,
+            String.class
+        );
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(response.getBody());
+        return root.get("access_token").asText();
     }
 
 }
