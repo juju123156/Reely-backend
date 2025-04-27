@@ -17,5 +17,6 @@ public interface MovieMapper {
     Integer getMovieId();
     Integer getCrewId();
     Integer getCastId();
+    Integer getFileId();
     
 }

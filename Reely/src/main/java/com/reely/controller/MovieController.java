@@ -474,10 +474,10 @@ public class MovieController {
         headers.set("Authorization", "Basic " + encodedCredentials);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         
-        Map<String, String> map = new HashMap<>();
-        map.put("grant_type", spotifyClientSecret);
+        String body = "grant_type=client_credentials";
         
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.postForEntity(
             "https://accounts.spotify.com/api/token",

@@ -46,7 +46,7 @@ public class MovieDto {
     private String moviePlot;
 
     // 누적 관객 수
-    private Long movieAudienceCnt;
+    private int movieAudienceCnt;
 
     // 언어
     private String movieLanguage;
@@ -61,7 +61,7 @@ public class MovieDto {
     private String movieTypeCd;
 
     // 배우 ID
-    private Long castId;
+    private int castId;
 
     // 배우 한국 이름
     private String castKoNm;
@@ -88,16 +88,16 @@ public class MovieDto {
     private String castDeath;
 
     // 파일
-    private Long fileId;
+    private int fileId;
 
     // 영화 이미지 ID
-    private Long movieImgId;
+    private int movieImgId;
 
     // 영화 이미지 type
-    private Long imgType;
+    private int imgType;
 
     // 스텝 ID
-    private Long crewId;
+    private int crewId;
 
     // 스텝 이름
     private String crewKoNm;
@@ -118,7 +118,7 @@ public class MovieDto {
     private String crewDirectorYn;
 
     // 제작국가 ID
-    private Long countryId;
+    private int countryId;
 
     // 제작국가 코드
     private String countryCd;
@@ -136,7 +136,7 @@ public class MovieDto {
     private String comCd;
 
     // 영화사 ID
-    private Long productionId;
+    private int productionId;
 
     // 영화사 한국 이름
     private String productionKoNm;
@@ -145,10 +145,10 @@ public class MovieDto {
     private String productionEnNm;
 
     // 영화 검색 ID
-    private Long movieSearchId;
+    private int movieSearchId;
 
     // 사운드트랙 ID
-    private Long soundTrackId;
+    private int soundTrackId;
 
 
     /* Kobis */
@@ -271,5 +271,7 @@ public class MovieDto {
 
     // 영화 제작사 국가
     private String productionCountry;
+
+    private int productionLogoFileId;
 
 }
