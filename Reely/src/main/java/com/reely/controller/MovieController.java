@@ -7,14 +7,11 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import java.net.URLDecoder;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,6 +34,7 @@ import com.reely.dto.SpotifyDto;
 import com.reely.mapper.MovieMapper;
 import com.reely.service.KmdbMovieFeignClient;
 import com.reely.service.KobisMovieFeignClient;
+import com.reely.service.MovieService;
 import com.reely.service.SpotifyFeignClient;
 import com.reely.service.TmdbMovieFeignClient;
 
@@ -50,15 +48,17 @@ public class MovieController {
     private final SpotifyFeignClient spotifyClient;
     // tmdb 이미지 url
     private static final String imageBaseUrl = "https://image.tmdb.org/t/p/original";
+    private final MovieService movieService;
     private final MovieMapper movieMapper;
 
     String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
     String kmdbKey = "MZ53N9719N5IH6Z7G2R9";
     String tmdbKey = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5MWJlODU2OGFhYzg4OGMyMzYxOTliMjBmNTBiZWFhNiIsIm5iZiI6MTc0NDYxNzA1Ni43NjQsInN1YiI6IjY3ZmNiZTYwZWMyMmJhM2I0OWQ5ODg0YyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.SH_t-hN5ptu6cBiLvpK0DSU0U56ZKWwaXUIchYFkMQM";
     String spotifyClientId = "5b2c9e587cf74849aa331f4c8cf79a9f";
-    String spotifyClientSecret = "5b2c9e587cf74849aa331f4c8cf79a9f"; // 실제 클라이언트 시크릿으로 교체 필요
+    String spotifyClientSecret = "4ccb21a2472048c69fe4741655125741";
 
-    public MovieController(MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient, SpotifyFeignClient spotifyClient) {
+    public MovieController(MovieMapper movieMapper, MovieService movieService, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient, SpotifyFeignClient spotifyClient) {
+        this.movieService = movieService;
         this.movieMapper = movieMapper;
         this.kobisFeignClient = kobisFeignClient;
         this.kmdbFeignClient = kmdbFeignClient;
@@ -426,6 +426,8 @@ public class MovieController {
                     }
                 }
             }
+
+        SpotifyDto spotifyDto = movieService.getMovieOst();
 
         } catch(Exception e) {
             e.printStackTrace();  
