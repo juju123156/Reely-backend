@@ -57,4 +57,15 @@ public class SpotifyDto {
         private int height;
         private int width;
     }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class SpotifyAlbumTracksDto {
+        private List<SpotifyDto.Item> items;
+        private int limit;
+        private String next;
+        private int offset;
+        private String previous;
+        private int total;
+    }
 } 

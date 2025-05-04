@@ -274,4 +274,17 @@ public class MovieDto {
 
     private int productionLogoFileId;
 
+    /* soundTrack */
+    private int soundtrackId;
+
+    private int albumId;
+    // 재생 길이
+    private int durationMs;
+
+    private String songNm;
+    
+    private String artistNm;
+
+    private String albumNm;
+
 }

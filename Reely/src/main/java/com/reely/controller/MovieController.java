@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,6 +32,8 @@ import com.reely.dto.MovieDto;
 import com.reely.dto.TmdbDto;
 import com.reely.dto.TmdbDto.ProductionCompany;
 import com.reely.dto.SpotifyDto;
+import com.reely.dto.SpotifyDto.SpotifyAlbumTracksDto;
+import com.reely.dto.SpotifyDto.Tracks;
 import com.reely.mapper.MovieMapper;
 import com.reely.service.KmdbMovieFeignClient;
 import com.reely.service.KobisMovieFeignClient;
@@ -427,8 +430,33 @@ public class MovieController {
                 }
             }
 
-        SpotifyDto spotifyDto = movieService.getMovieOst();
+        SpotifyDto spotifyDto = movieService.getMovieOst(movieDto.getMovieEnNm());
 
+        if (spotifyDto != null && spotifyDto.getTracks() != null && spotifyDto.getTracks().getItems() != null) {
+            for (SpotifyDto.Item track : spotifyDto.getTracks().getItems()) {
+                // OST 정보 처리 로직
+             
+                String albumId = track.getAlbum().getId();
+                String albumNm = track.getAlbum().getName();
+                List<SpotifyDto.Image> albumImgs = track.getAlbum().getImages();
+                // 앨범 수록곡 조회
+                int limit = 20;
+                SpotifyAlbumTracksDto spotifyAlbumTracksDto = movieService.getSpotifyAlbumTracks(albumId, limit);
+                MovieDto soundMovieDto = new MovieDto();
+                for (SpotifyDto.Item album : spotifyAlbumTracksDto.getItems()) {
+                    soundMovieDto.setAlbumNm(albumNm);
+                    List<SpotifyDto.Artist> artists = album.getArtists();
+                    String artistNm = artists.stream()
+                        .map(SpotifyDto.Artist::getName)
+                        .collect(Collectors.joining(","));
+                        soundMovieDto.setArtistNm(artistNm);
+                    soundMovieDto.setArtistNm(album.getArtists().get(0).getName());
+                    soundMovieDto.setSongNm(album.getName());
+                    movieMapper.insertSoundtrackInfo(soundMovieDto);
+                }
+            }
+        }
+            
         } catch(Exception e) {
             e.printStackTrace();  
         }
@@ -490,6 +518,14 @@ public class MovieController {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode root = objectMapper.readTree(response.getBody());
         return root.get("access_token").asText();
+    }
+
+    @GetMapping(value = "/getSpotifyAlbumTracks/{albumId}", produces = "application/json")
+    public SpotifyAlbumTracksDto getSpotifyAlbumTracks(@PathVariable("albumId") String albumId, @RequestParam(value = "limit", defaultValue = "20") int limit) {
+        SpotifyAlbumTracksDto spotifyDto = movieService.getSpotifyAlbumTracks(albumId, limit);
+        System.out.println(spotifyDto.toString());
+
+        return spotifyDto;
     }
 
 }
