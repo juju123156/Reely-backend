@@ -452,6 +452,17 @@ public class MovieController {
                         soundMovieDto.setArtistNm(artistNm);
                     soundMovieDto.setArtistNm(album.getArtists().get(0).getName());
                     soundMovieDto.setSongNm(album.getName());
+                    int soundTrackId = movieMapper.getSoundTrackId();
+                    soundMovieDto.setSoundTrackId(soundTrackId);
+                    for(SpotifyDto.Image img : albumImgs){
+  
+                        int imgFileId = movieMapper.getFileId();
+                        soundMovieDto.setFileId(imgFileId);
+                        soundMovieDto.setSoundTrackId(soundTrackId);
+                        movieMapper.insertFileInfo(soundMovieDto);
+                    }
+                    
+                    
                     movieMapper.insertSoundtrackInfo(soundMovieDto);
                 }
             }

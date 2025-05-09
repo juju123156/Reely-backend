@@ -87,6 +87,9 @@ public class MovieDto {
     // 배우 별세일
     private String castDeath;
 
+    // 배우 로코 이미지 ID
+    private int castLogoFileId;
+
     // 파일
     private int fileId;
 
@@ -287,4 +290,9 @@ public class MovieDto {
 
     private String albumNm;
 
+    private int imgSzWidth;
+
+    private int imgSzHight;
+
+    private int albumImgId;
 }

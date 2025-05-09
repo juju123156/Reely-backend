@@ -18,5 +18,6 @@ public interface MovieMapper {
     Integer getCrewId();
     Integer getCastId();
     Integer getFileId();
-    
+    Integer getSoundTrackId();
+    int insertSoundtrackInfo(MovieDto movieDto);
 }
