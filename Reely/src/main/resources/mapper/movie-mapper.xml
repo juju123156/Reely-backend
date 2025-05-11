@@ -15,13 +15,30 @@
             )
     </insert>
 
+    <insert id="insertProductionImgInfo" parameterType="Movie">
+        insert into movie_production
+            (
+             production_id,
+             movie_id,
+             production_logo_file_id,
+             frst_reg_date
+            )
+        values
+            (
+              #{productionId},
+              #{movieId},
+              #{productionLogoFileId},
+              NOW()
+            )
+    </insert>
+
     <insert id="insertProductionInfo" parameterType="Movie">
         insert into production
             (
              production_ko_nm,
              production_en_Nm,
              logo_file_id,
-             country_cd,
+             production_country,
              frst_reg_date
             )
         values
@@ -29,7 +46,7 @@
               #{productionKoNm},
               #{productionEnNm},
               #{productionLogoFileId},
-              #{countryCd},
+              #{productionCountry},
               NOW()
             )
     </insert>
@@ -38,6 +55,7 @@
         insert into file
             (
              file_id,
+             movie_id,
              file_path,
              file_upload_dt,
              file_typ_cd,
@@ -46,6 +64,7 @@
         values
             (
              #{fileId},
+             #{movieId},
              #{filePath},
              NOW(),
              #{fileTypCd},
@@ -53,8 +72,23 @@
             )
     </insert>
 
-       <!-- 배우 정보 저장 -->
-       <insert id="insertCastInfo" parameterType="com.reely.dto.MovieDto">
+    <insert id="insertMovieCast" parameterType="Movie">
+        insert into movie_cast
+            (
+             cast_id,
+             movie_id,
+             frst_reg_date
+            )
+        values
+            (
+             #{castId},
+             #{movieId},
+             NOW()
+            )
+    </insert>
+
+    <!-- 배우 정보 저장 -->
+    <insert id="insertCastInfo" parameterType="com.reely.dto.MovieDto">
         INSERT INTO cast (
             cast_ko_nm,
             cast_en_nm,
@@ -94,24 +128,40 @@
             NOW()
         )
     </insert>
-    
+
+    <insert id="insertMovieCrew" parameterType="com.reely.dto.MovieDto">
+        INSERT INTO movie_crew (
+            crew_id,    
+            movie_id,
+            crew_department,
+            crew_role,
+            director_yn,
+            frst_reg_date
+        ) VALUES (
+            #{crewId},
+            #{movieId},
+            #{crewDepartment},
+            #{crewRole},
+            #{directorYn},
+            NOW()
+        )
+    </insert>
+
     <!-- 스태프 정보 저장 -->
     <insert id="insertCrewInfo" parameterType="com.reely.dto.MovieDto">
         INSERT INTO crew (
+            crew_id,
             crew_ko_nm,
             crew_en_nm,
-            crew_role,
             crew_birth,
             crew_death,
-            crew_director_yn,
             frst_reg_date
         ) VALUES (
+            #{crewId},
             #{crewKoNm},
             #{crewEnNm},
-            #{crewRole},
             #{crewBirth},
             #{crewDeath},
-            #{crewDirectorYn},
             NOW()
         )
     </insert>
@@ -137,6 +187,9 @@
         SELECT nextval('movie_id_seq')
     </select>
 
+    <select id="getProductionId" resultType="java.lang.Integer">
+        SELECT nextval('production_id_seq')
+    </select>
 
     <select id="getCrewId" resultType="java.lang.Integer">
         SELECT nextval('crew_id_seq')
@@ -148,6 +201,44 @@
 
     <select id="getFileId" resultType="java.lang.Integer">
         SELECT nextval('file_id_seq')
+    </select>
+
+    <insert id="insertSoundtrackInfo" parameterType="com.reely.dto.MovieDto">
+        INSERT INTO soundtrack (
+            soundtrack_id,
+            movie_id,
+            album_id,
+            album_nm,
+            song_nm,
+            artist_nm,
+            duration_ms,
+            frst_reg_date
+        ) VALUES (
+            #{soundtrackId},
+            #{movieId},
+            #{albumId},
+            #{albumNm},
+            #{songNm},
+            #{artistNm},
+            #{durationMs},
+            NOW()
+        )
+    </insert>
+
+    <insert id="insertSoundtrackImg" parameterType="com.reely.dto.MovieDto">
+        INSERT INTO soundtrack_img (
+            soundtrack_id,
+            album_img_id,
+            frst_reg_date
+        ) VALUES (
+            #{soundtrackId},
+            #{albumImgId},
+            NOW()
+        )
+    </insert>
+
+    <select id="getAlbumId" resultType="java.lang.Integer">
+        SELECT nextval('album_id_seq')
     </select>
 
 </mapper>

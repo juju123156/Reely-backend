@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
 public class MovieDto {
 
     // 영화 ID
-    private String movieId;
+    private int movieId;
     // 영화명 (국문)
     private String movieKoNm;    
     // 영화명 (영문)     
@@ -73,7 +73,7 @@ public class MovieDto {
     private String castEtc;
 
     // 배우 배역 분류
-    private String roleGrpNm;
+    private String crewDepartment;
 
     // 배우 한국 배역
     private String roleKoNm;
