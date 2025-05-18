@@ -35,6 +35,7 @@
     <insert id="insertProductionInfo" parameterType="Movie">
         insert into production
             (
+             production_id,
              production_ko_nm,
              production_en_Nm,
              logo_file_id,
@@ -43,6 +44,7 @@
             )
         values
             (
+              #{productionId},
               #{productionKoNm},
               #{productionEnNm},
               #{productionLogoFileId},
