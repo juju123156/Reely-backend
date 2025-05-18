@@ -112,7 +112,7 @@ public class MovieController {
                 JsonNode firstData = dataArray.get(0);
                 JsonNode resultArray = firstData.path("Result");
                 kmdbList = objectMapper.readerForListOf(KmdbDto.class).readValue(resultArray);
-                System.out.println("===========================kmdb json==========================="+kmdbList.get(1));
+                
                 if (kmdbList != null) {
                     for (KmdbDto dto : kmdbList) {
                         String title = dto.getTitle();
@@ -134,10 +134,10 @@ public class MovieController {
                 }
             // 없으면 null 리턴
             }
-            
+            //System.out.println("===========================kmdb json==========================="+kmdbList.get(2));
             List<HashMap<String, String>> directors = new ArrayList<>();
             
-            if (kmdbDto != null && kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
+            if (kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
                 directors = kmdbDto.getDirectors().getDirector().stream()
                     .map(d -> {
                         HashMap<String, String> map = new HashMap<>();
@@ -151,14 +151,14 @@ public class MovieController {
             List<KmdbDto.Rating> ratingList = new ArrayList<>();
             String grade = "";
             
-            if (kmdbDto != null && kmdbDto.getRatings() != null && kmdbDto.getRatings().getRating() != null) {
+            if (kmdbDto.getRatings() != null && !kmdbDto.getRatings().getRating().isEmpty()) {
                 ratingList = kmdbDto.getRatings().getRating();
                 String raw = ratingList.get(0).getRatingGrade();
                 // || 기준으로 나누고, 첫 번째 값만 추출
                 grade = raw != null ? raw.split("\\|\\|")[0] : "";
             }
             String plotText = "";
-            if (kmdbDto != null && kmdbDto.getPlots() != null){
+            if (kmdbDto.getPlots() != null){
                 KmdbDto.PlotsWrapper plotsWrapper = kmdbDto.getPlots();
 
             
@@ -178,7 +178,7 @@ public class MovieController {
 
             List<HashMap<String, String>> actors = new ArrayList<>();
             
-            if (kmdbDto != null && kmdbDto.getActors() != null && kmdbDto.getActors().getActor() != null) {
+            if (kmdbDto.getActors() != null && kmdbDto.getActors().getActor() != null) {
                 actors = kmdbDto.getActors().getActor().stream()
                     .map(a -> {
                         HashMap<String, String> map = new HashMap<>();
@@ -191,7 +191,7 @@ public class MovieController {
 
             List<HashMap<String, String>> casts = new ArrayList<>();
             
-            if (kmdbDto != null && kmdbDto.getStaffs() != null && kmdbDto.getStaffs().getStaff() != null) {
+            if (kmdbDto.getStaffs() != null && kmdbDto.getStaffs().getStaff() != null) {
                 casts = kmdbDto.getStaffs().getStaff().stream()
                     .map(s -> {
                         HashMap<String, String> map = new HashMap<>();
@@ -207,7 +207,7 @@ public class MovieController {
                 
             List<HashMap<String, String>> vods = new ArrayList<>();
     
-            if (kmdbDto != null && kmdbDto.getVods() != null && kmdbDto.getVods().getVod() != null) {
+            if (kmdbDto.getVods() != null && kmdbDto.getVods().getVod() != null) {
                 vods = kmdbDto.getVods().getVod().stream()
                     .map(v -> {
                         HashMap<String, String> map = new HashMap<>();
@@ -217,9 +217,8 @@ public class MovieController {
                     })
                     .collect(Collectors.toList());
             }
-            int movieId = movieMapper.getMovieId();
+
             movieDto = MovieDto.builder()
-                               .movieId(movieId)
                                .movieKoNm(kmdbDto.getTitle() != null ? kmdbDto.getTitle(): "")
                                .movieEnNm(kmdbDto.getTitleOrg() != null ? kmdbDto.getTitleOrg(): "")
                                .moviePrDt(kmdbDto.getProdYear() != null ? kmdbDto.getProdYear(): "")
@@ -291,7 +290,7 @@ public class MovieController {
                 CommonUtil.fileDownloader(posterUrl, fPath, fileName);
                 movieDto.setFilePath(fPath+"/"+fileName);
                 movieDto.setFileTypCd("001");
-                movieMapper.insertFileInfo(movieDto);
+                movieService.insertFileInfo(movieDto);
             }
 
             String stills = movieDto.getStillUrl();
@@ -306,7 +305,7 @@ public class MovieController {
                 CommonUtil.fileDownloader(stillsUrl, fPath, fileName);
                 movieDto.setFilePath(fPath+"/"+fileName);
                 movieDto.setFileTypCd("002");
-                movieMapper.insertFileInfo(movieDto);
+                movieService.insertFileInfo(movieDto);
             }
             for (HashMap<String, String> vod : vods) {
                 String vodUrl = vod.get("vodUrl");
@@ -320,7 +319,7 @@ public class MovieController {
                 CommonUtil.vodFileDownloader(originalUrl, fPath, fileName);
                 movieDto.setFilePath(fPath+"/"+fileName);
                 movieDto.setFileTypCd("003");
-                movieMapper.insertFileInfo(movieDto);
+                movieService.insertFileInfo(movieDto);
 
             }
             movieDto.setFilePath("");
@@ -348,27 +347,23 @@ public class MovieController {
             System.out.println("===========================tmdb json===========================" + tmdbDto.toString());
 
             List<ProductionCompany> pdCompList = tmdbDto.getProductionCompanies();
-            
+
             for (ProductionCompany pd : pdCompList){
                 movieDto.setProductionEnNm(pd.getName());
                 movieDto.setProductionCountry(pd.getOriginCountry());
-                if (pd.getLogoPath() != null && !pd.getLogoPath().isEmpty()) {
-                    String tmImgUrl = imageBaseUrl + pd.getLogoPath();
-                    String fileExtension = CommonUtil.getExtension(tmImgUrl);
-                    String fileName = CommonUtil.generateFileName(fileExtension);
-                    String fPath = localFilePath + filePath + "/logo";
-                    CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
-                    movieDto.setFilePath(fPath + "/" + fileName);
-                    movieDto.setFileTypCd("004");
-                    int fileId = movieMapper.getFileId();
-                    movieDto.setProductionLogoFileId(fileId);
-                    movieDto.setFileId(fileId);
-                    int productionId = movieMapper.getProductionId();
-                    movieDto.setProductionId(productionId);
-                    movieMapper.insertFileInfo(movieDto);
-                    movieMapper.insertProductionImgInfo(movieDto);
-                    movieMapper.insertProductionInfo(movieDto);
-                }
+                String tmImgUrl = imageBaseUrl+pd.getLogoPath();
+
+                String fileExtension = CommonUtil.getExtension(tmImgUrl);
+                String fileName = CommonUtil.generateFileName(fileExtension);
+                String fPath = localFilePath+filePath+"/logo"; 
+                CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
+                movieDto.setFilePath(fPath+"/"+fileName);
+                movieDto.setFileTypCd("004");
+                int fileId = movieMapper.getFileId();
+                movieDto.setProductionLogoFileId(fileId);
+                movieDto.setFileId(fileId);
+                movieService.insertFileInfo(movieDto);
+                movieMapper.insertProductionInfo(movieDto);
             }
 
             // 출연진 정보 조회
@@ -385,8 +380,11 @@ public class MovieController {
                     // 배우 정보 저장
                     movieDto.setCastEnNm(actorName);
                     movieDto.setRoleEnNm(character);
+                    int castId = movieMapper.getCastId();
+                    movieDto.setCastId(castId);
                     movieMapper.insertCastInfo(movieDto);
-                    int castId = movieDto.getCastId();
+                    
+                    
                     // 배우 프로필 이미지 다운로드 및 저장
                     if (profilePath != null && !profilePath.isEmpty()) {
                         String profileUrl = imageBaseUrl + profilePath;
@@ -398,10 +396,10 @@ public class MovieController {
                         movieDto.setFilePath(fPath + "/" + fileName);
                         movieDto.setFileTypCd("005"); // cast profile 이미지 타입 코드
                         int fileId = movieMapper.getFileId();
+                        movieDto.setCastLogoFileId(fileId);
+                        movieMapper.insertCastImg(movieDto);
                         movieDto.setFileId(fileId);
-                        movieDto.setCastId(castId);
-                        movieMapper.insertMovieCast(movieDto);
-                        movieMapper.insertFileInfo(movieDto);
+                        movieService.insertFileInfo(movieDto);
                     }
                 }
             }
@@ -418,9 +416,6 @@ public class MovieController {
                     movieDto.setCrewEnNm(crewName);
                     movieDto.setCrewRole(job);
                     movieDto.setCrewDepartment(department);
-                    int crewId = movieMapper.getCrewId();
-                    movieDto.setCrewId(crewId);
-                    movieMapper.insertMovieCrew(movieDto);
                     movieMapper.insertCrewInfo(movieDto);
 
                     // 프로필 이미지 다운로드 및 저장
@@ -435,7 +430,7 @@ public class MovieController {
                         movieDto.setFileTypCd("006"); // crew profile 이미지 타입 코드
                         int fileId = movieMapper.getFileId();
                         movieDto.setFileId(fileId);
-                        movieMapper.insertFileInfo(movieDto);
+                        movieService.insertFileInfo(movieDto);
                     }
                 }
             }
@@ -445,20 +440,42 @@ public class MovieController {
         if (spotifyDto != null && spotifyDto.getTracks() != null && spotifyDto.getTracks().getItems() != null) {
             for (SpotifyDto.Item track : spotifyDto.getTracks().getItems()) {
                 // OST 정보 처리 로직
-                int soundtrackId = movieMapper.getSoundTrackId();
+             
                 String albumId = track.getAlbum().getId();
                 String albumNm = track.getAlbum().getName();
                 List<SpotifyDto.Image> albumImgs = track.getAlbum().getImages();
+                MovieDto soundImgDto = new MovieDto();
+                int soundTrackId = movieMapper.getSoundtrackId();
+                soundImgDto.setSoundTrackId(soundTrackId);
+                for(SpotifyDto.Image img : albumImgs){
+                    int imgFileId = movieMapper.getFileId();
+                    soundImgDto.setFileId(imgFileId);
+                    String albumImgUrl =  img.getUrl();
+                    String fileExtension = CommonUtil.getExtension(albumImgUrl);
+                    String fileName = CommonUtil.generateFileName(fileExtension);
+                    String fPath = localFilePath + filePath + "/album_img";
+                    CommonUtil.fileDownloader(albumImgUrl, fPath, fileName);
+                    soundImgDto.setFilePath(fPath + "/" + fileName);
+                    soundImgDto.setFileTypCd("007");
+                    soundImgDto.setImgSzWidth(img.getWidth());
+                    soundImgDto.setImgSzHight(img.getWidth());
+                    soundImgDto.setAlbumImgId(imgFileId);
+                    movieMapper.insertSoundtrackImg(soundImgDto);
+                    movieService.insertFileInfo(soundImgDto);
+                }
+
                 // 앨범 수록곡 조회
                 int limit = 20;
                 SpotifyAlbumTracksDto spotifyAlbumTracksDto = movieService.getSpotifyAlbumTracks(albumId, limit);
                 MovieDto soundMovieDto = new MovieDto();
-                soundMovieDto.setSoundTrackId(soundtrackId);
-                int newAlbumId = movieMapper.getAlbumId();
-                soundMovieDto.setAlbumId(newAlbumId);
-
                 for (SpotifyDto.Item album : spotifyAlbumTracksDto.getItems()) {
+                    soundMovieDto.setSoundTrackId(soundTrackId);
+                    soundMovieDto.setMovieId(soundTrackId);
+                    int newAlbumId = movieMapper.getAlbumId();
+                    soundMovieDto.setAlbumId(newAlbumId);
                     soundMovieDto.setAlbumNm(albumNm);
+                    soundMovieDto.setDurationMs(album.getDurationMs());
+
                     List<SpotifyDto.Artist> artists = album.getArtists();
                     String artistNm = artists.stream()
                         .map(SpotifyDto.Artist::getName)
@@ -466,24 +483,10 @@ public class MovieController {
                         soundMovieDto.setArtistNm(artistNm);
                     soundMovieDto.setArtistNm(album.getArtists().get(0).getName());
                     soundMovieDto.setSongNm(album.getName());
+                    
+                    
                     movieMapper.insertSoundtrackInfo(soundMovieDto);
                 }
-                if(albumImgs  != null && albumImgs.size() > 0){
-                    for (SpotifyDto.Image img : albumImgs){
-                        // 앨범 이미지 다운로드 및 저장
-                        String imgUrl = img.getUrl();
-                        String fileExtension = CommonUtil.getExtension(imgUrl);
-                        String fileName = CommonUtil.generateFileName(fileExtension);
-                        String fPath = localFilePath + filePath + "/album_imgs";
-                        CommonUtil.fileDownloader(imgUrl, fPath, fileName);
-                        soundMovieDto.setFilePath(fPath + "/" + fileName);
-                        soundMovieDto.setFileTypCd("007"); // 앨범 이미지 타입 코드
-                        int fileId = movieMapper.getFileId();
-                        soundMovieDto.setAlbumImgId(fileId);
-                        movieMapper.insertSoundtrackImg(soundMovieDto);
-                    }
-                }
-
             }
         }
             

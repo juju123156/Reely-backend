@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.reely.dto.MovieDto;
 import com.reely.dto.SpotifyDto;
 import com.reely.dto.SpotifyDto.SpotifyAlbumTracksDto;
 import com.reely.mapper.MovieMapper;
@@ -19,6 +20,7 @@ import com.reely.service.KobisMovieFeignClient;
 import com.reely.service.SpotifyFeignClient;
 import com.reely.service.TmdbMovieFeignClient;
 import com.reely.service.MovieService;
+
 @Service
 public class MovieServiceImpl implements MovieService {
     
@@ -108,5 +110,10 @@ public class MovieServiceImpl implements MovieService {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode root = objectMapper.readTree(response.getBody());
         return root.get("access_token").asText();
+    }
+
+    @Override
+    public int insertFileInfo(MovieDto movieDto) {
+        return movieMapper.insertFileInfo(movieDto);
     }
 }
