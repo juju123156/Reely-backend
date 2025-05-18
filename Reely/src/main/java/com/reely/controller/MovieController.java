@@ -290,6 +290,8 @@ public class MovieController {
                 CommonUtil.fileDownloader(posterUrl, fPath, fileName);
                 movieDto.setFilePath(fPath+"/"+fileName);
                 movieDto.setFileTypCd("001");
+                int fileId = movieMapper.getFileId();
+                movieDto.setFileId(fileId);
                 movieService.insertFileInfo(movieDto);
             }
 
@@ -305,6 +307,8 @@ public class MovieController {
                 CommonUtil.fileDownloader(stillsUrl, fPath, fileName);
                 movieDto.setFilePath(fPath+"/"+fileName);
                 movieDto.setFileTypCd("002");
+                int fileId = movieMapper.getFileId();
+                movieDto.setFileId(fileId);
                 movieService.insertFileInfo(movieDto);
             }
             for (HashMap<String, String> vod : vods) {
@@ -319,6 +323,8 @@ public class MovieController {
                 CommonUtil.vodFileDownloader(originalUrl, fPath, fileName);
                 movieDto.setFilePath(fPath+"/"+fileName);
                 movieDto.setFileTypCd("003");
+                int fileId = movieMapper.getFileId();
+                movieDto.setFileId(fileId);
                 movieService.insertFileInfo(movieDto);
 
             }
@@ -360,6 +366,7 @@ public class MovieController {
                 movieDto.setFilePath(fPath+"/"+fileName);
                 movieDto.setFileTypCd("004");
                 int fileId = movieMapper.getFileId();
+                System.out.println("363 : "+fileId);
                 movieDto.setProductionLogoFileId(fileId);
                 movieDto.setFileId(fileId);
                 movieService.insertFileInfo(movieDto);
@@ -396,6 +403,7 @@ public class MovieController {
                         movieDto.setFilePath(fPath + "/" + fileName);
                         movieDto.setFileTypCd("005"); // cast profile 이미지 타입 코드
                         int fileId = movieMapper.getFileId();
+                        System.out.println("400 : "+fileId);
                         movieDto.setCastLogoFileId(fileId);
                         movieMapper.insertCastImg(movieDto);
                         movieDto.setFileId(fileId);
@@ -429,6 +437,7 @@ public class MovieController {
                         movieDto.setFilePath(fPath + "/" + fileName);
                         movieDto.setFileTypCd("006"); // crew profile 이미지 타입 코드
                         int fileId = movieMapper.getFileId();
+                        System.out.println("434 : "+fileId);
                         movieDto.setFileId(fileId);
                         movieService.insertFileInfo(movieDto);
                     }
@@ -449,6 +458,7 @@ public class MovieController {
                 soundImgDto.setSoundTrackId(soundTrackId);
                 for(SpotifyDto.Image img : albumImgs){
                     int imgFileId = movieMapper.getFileId();
+                    System.out.println("455 : "+imgFileId);
                     soundImgDto.setFileId(imgFileId);
                     String albumImgUrl =  img.getUrl();
                     String fileExtension = CommonUtil.getExtension(albumImgUrl);
