@@ -22,7 +22,7 @@
              production_ko_nm,
              production_en_Nm,
              logo_file_id,
-             country_cd,
+             production_country,
              frst_reg_date
             )
         values
@@ -31,7 +31,7 @@
               #{productionKoNm},
               #{productionEnNm},
               #{productionLogoFileId},
-              #{countryCd},
+              #{productionCountry},
               NOW()
             )
     </insert>
