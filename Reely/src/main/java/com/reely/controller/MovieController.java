@@ -69,8 +69,8 @@ public class MovieController {
         this.spotifyClient = spotifyClient;
     }
 
-    String localFilePath = "/Users";
-    String filePath = "/Reely/volumes";
+    String localFilePath = System.getProperty("user.dir"); // 현재 작업 디렉토리
+    String filePath = "/volumes"; // 프로젝트 내부 경로
     
     @GetMapping(value = "/getDailyBoxOfficeList", produces = "application/json")
     public String getDailyBoxOfficeList(KobisDto kobisDto) {
@@ -357,20 +357,31 @@ public class MovieController {
             for (ProductionCompany pd : pdCompList){
                 movieDto.setProductionEnNm(pd.getName());
                 movieDto.setProductionCountry(pd.getOriginCountry());
-                String tmImgUrl = imageBaseUrl+pd.getLogoPath();
-
-                String fileExtension = CommonUtil.getExtension(tmImgUrl);
-                String fileName = CommonUtil.generateFileName(fileExtension);
-                String fPath = localFilePath+filePath+"/logo"; 
-                CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
-                movieDto.setFilePath(fPath+"/"+fileName);
-                movieDto.setFileTypCd("004");
-                int fileId = movieMapper.getFileId();
-                System.out.println("363 : "+fileId);
-                movieDto.setProductionLogoFileId(fileId);
-                movieDto.setFileId(fileId);
-                movieService.insertFileInfo(movieDto);
-                movieMapper.insertProductionInfo(movieDto);
+                
+                // logoPath가 null이 아닌 경우에만 이미지 다운로드 시도
+                if (pd.getLogoPath() != null && !pd.getLogoPath().isEmpty()) {
+                    String tmImgUrl = imageBaseUrl + pd.getLogoPath();
+                    String fileExtension = CommonUtil.getExtension(tmImgUrl);
+                    String fileName = CommonUtil.generateFileName(fileExtension);
+                    String fPath = localFilePath + filePath + "/logo"; 
+                    CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
+                    movieDto.setFilePath(fPath + "/" + fileName);
+                    movieDto.setFileTypCd("004");
+                    int fileId = movieMapper.getFileId();
+                    int productionId = movieMapper.getProductionId();
+                    movieDto.setProductionId(productionId);
+                    movieDto.setProductionLogoFileId(fileId);
+                    movieDto.setFileId(fileId);
+                    movieService.insertFileInfo(movieDto);
+                    movieMapper.insertProductionInfo(movieDto);
+                    movieMapper.insertMovieProductionInfo(movieDto);
+                } else {
+                    // logoPath가 null인 경우 기본 처리
+                    int productionId = movieMapper.getProductionId();
+                    movieDto.setProductionId(productionId);
+                    movieMapper.insertProductionInfo(movieDto);
+                    movieMapper.insertMovieProductionInfo(movieDto);
+                }
             }
 
             // 출연진 정보 조회

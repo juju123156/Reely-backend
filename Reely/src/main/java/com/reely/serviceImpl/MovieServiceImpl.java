@@ -113,7 +113,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public int insertFileInfo(MovieDto movieDto) {
+    public int insertFileInfo(List<MovieDto>  movieDto) {
         return movieMapper.insertFileInfo(movieDto);
     }
 }

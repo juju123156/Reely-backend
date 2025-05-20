@@ -36,6 +36,21 @@
             )
     </insert>
 
+    <insert id="insertMovieProductionInfo" parameterType="Movie">
+        insert into movie_production
+            (
+             production_id,
+             movie_id,
+             frst_reg_date
+            )
+        values
+            (
+              #{productionId},
+              #{movieId},
+              NOW()
+            )
+    </insert>
+
     <insert id="insertFileInfo" parameterType="Movie">
         insert into file
             (
@@ -151,6 +166,9 @@
         SELECT nextval('movie_id_seq')
     </select>
 
+    <select id="getProductionId" resultType="java.lang.Integer">
+        SELECT nextval('production_id_seq')
+    </select>
 
     <select id="getCrewId" resultType="java.lang.Integer">
         SELECT nextval('crew_id_seq')

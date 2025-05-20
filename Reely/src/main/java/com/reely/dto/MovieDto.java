@@ -73,7 +73,7 @@ public class MovieDto {
     private String castEtc;
 
     // 배우 배역 분류
-    private String crewDepartment;
+    private String castDepartment;
 
     // 배우 한국 배역
     private String roleKoNm;
@@ -82,7 +82,7 @@ public class MovieDto {
     private String roleEnNm;
 
     // 배우 생년일
-    private String castKBirth;
+    private String castBirth;
 
     // 배우 별세일
     private String castDeath;
@@ -107,6 +107,9 @@ public class MovieDto {
 
     // 스텝 이름
     private String crewEnNm;
+
+    // 스텝 역할 분류
+    private String crewDepartment;
 
     // 스텝 역할
     private String crewRole;
