@@ -1,5 +1,7 @@
 package com.reely.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.reely.dto.MovieDto;
@@ -10,7 +12,7 @@ public interface MovieService {
 
     SpotifyDto getMovieOst(String movieNm);
     SpotifyAlbumTracksDto getSpotifyAlbumTracks(String albumId, int limit);
-    int insertFileInfo(MovieDto movieDto);
+    int insertFileInfo(List<MovieDto> movieDto);
 
 
 
