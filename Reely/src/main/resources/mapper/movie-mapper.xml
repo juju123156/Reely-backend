@@ -51,7 +51,7 @@
             )
     </insert>
 
-    <insert id="insertFileInfo" parameterType="Movie">
+    <insert id="insertFileInfo" parameterType="list">
         insert into file
             (
              file_id,
@@ -61,13 +61,15 @@
              frst_reg_date
             )
         values
+        <foreach collection="list" item="file" separator=",">
             (
-             #{fileId},
-             #{filePath},
-             NOW(),
-             #{fileTypCd},
-             NOW()
+                #{file.fileId},
+                #{file.filePath},
+                NOW(),
+                #{file.fileTypCd},
+                NOW()
             )
+        </foreach>
     </insert>
 
     <insert id="insertCastImg" parameterType="com.reely.dto.MovieDto">

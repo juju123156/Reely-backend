@@ -1,12 +1,14 @@
 package com.reely.serviceImpl;
 
 import java.util.Base64;
+import java.util.List;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -111,7 +113,7 @@ public class MovieServiceImpl implements MovieService {
         JsonNode root = objectMapper.readTree(response.getBody());
         return root.get("access_token").asText();
     }
-
+    @Transactional
     @Override
     public int insertFileInfo(List<MovieDto>  movieDto) {
         return movieMapper.insertFileInfo(movieDto);
