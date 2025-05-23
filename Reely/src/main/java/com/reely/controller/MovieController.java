@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
@@ -513,52 +515,59 @@ public class MovieController {
         if (spotifyDto != null && spotifyDto.getTracks() != null && spotifyDto.getTracks().getItems() != null) {
             List<MovieDto> movieDtoSoundImgList = new ArrayList<>();
             List<MovieDto> movieDtoSongList = new ArrayList<>();
+            Set<Integer> procedSoundTrackIds = new HashSet<>();
             for (SpotifyDto.Item track : spotifyDto.getTracks().getItems()) {
-                // OST 정보 처리 로직
-                MovieDto soundImgDto = new MovieDto();
-                String albumId = track.getAlbum().getId();
-                String albumNm = track.getAlbum().getName();
-                List<SpotifyDto.Image> albumImgs = track.getAlbum().getImages();
                 int soundTrackId = movieMapper.getSoundtrackId();
-                soundImgDto.setSoundTrackId(soundTrackId);
-                for(SpotifyDto.Image img : albumImgs){
-                    int fileId = movieMapper.getFileId();
-                    soundImgDto.setFileId(fileId);
-                    String albumImgUrl =  img.getUrl();
-                    String fileExtension = CommonUtil.getExtension(albumImgUrl);
-                    String fileName = CommonUtil.generateFileName(fileExtension);
-                    String fPath = localFilePath + filePath + "/album_img";
-                    CommonUtil.fileDownloader(albumImgUrl, fPath, fileName);
-                    soundImgDto.setFilePath(fPath + "/" + fileName);
-                    soundImgDto.setFileTypCd("007");
-                    soundImgDto.setImgSzWidth(img.getWidth());
-                    soundImgDto.setImgSzHight(img.getWidth());
-                    soundImgDto.setAlbumImgId(fileId);
-                    movieDtoSoundImgList.add(movieDto);
-                }
-
-                // 앨범 수록곡 조회
-                int limit = 20;
-                SpotifyAlbumTracksDto spotifyAlbumTracksDto = movieService.getSpotifyAlbumTracks(albumId, limit);
-                
-                for (SpotifyDto.Item album : spotifyAlbumTracksDto.getItems()) {
-                    MovieDto soundMovieDto = new MovieDto();
-                    soundMovieDto.setSoundTrackId(soundTrackId);
-                    soundMovieDto.setMovieId(movieDto.getMovieId());
-                    int newAlbumId = movieMapper.getAlbumId();
-                    soundMovieDto.setAlbumId(newAlbumId);
-                    soundMovieDto.setAlbumNm(albumNm);
-                    soundMovieDto.setDurationMs(album.getDurationMs());
-
-                    List<SpotifyDto.Artist> artists = album.getArtists();
-                    String artistNm = artists.stream()
-                        .map(SpotifyDto.Artist::getName)
-                        .collect(Collectors.joining(","));
-                        soundMovieDto.setArtistNm(artistNm);
-                    soundMovieDto.setArtistNm(album.getArtists().get(0).getName());
-                    soundMovieDto.setSongNm(album.getName());
-                    movieDtoSongList.add(soundMovieDto);
+                if (!procedSoundTrackIds.contains(soundTrackId)) {
+                    procedSoundTrackIds.add(soundTrackId);
+                    // OST 정보 처리 로직
                     
+                    String albumId = track.getAlbum().getId();
+                    String albumNm = track.getAlbum().getName();
+                    List<SpotifyDto.Image> albumImgs = track.getAlbum().getImages();
+
+                    for(SpotifyDto.Image img : albumImgs){
+                        MovieDto soundImgDto = new MovieDto();
+                        soundImgDto.setSoundTrackId(soundTrackId);
+                        int fileId = movieMapper.getFileId();
+                        soundImgDto.setFileId(fileId);
+                        soundImgDto.setAlbumFileId(fileId);
+                        String albumImgUrl =  img.getUrl();
+                        //String fileExtension = CommonUtil.getExtension(albumImgUrl);
+                        String fileName = CommonUtil.generateFileName("jpg");
+                        String fPath = localFilePath + filePath + "/album_img";
+                        CommonUtil.fileDownloader(albumImgUrl, fPath, fileName);
+                        soundImgDto.setFilePath(fPath + "/" + fileName);
+                        soundImgDto.setFileTypCd("007");
+                        soundImgDto.setImgSzWidth(img.getWidth());
+                        soundImgDto.setImgSzHight(img.getWidth());
+                        soundImgDto.setAlbumImgId(fileId);
+                        movieDtoSoundImgList.add(soundImgDto);
+                    }
+
+                    // 앨범 수록곡 조회
+                    int limit = 20;
+                    SpotifyAlbumTracksDto spotifyAlbumTracksDto = movieService.getSpotifyAlbumTracks(albumId, limit);
+                    
+                    for (SpotifyDto.Item album : spotifyAlbumTracksDto.getItems()) {
+                        MovieDto soundMovieDto = new MovieDto();
+                        soundMovieDto.setSoundTrackId(soundTrackId);
+                        soundMovieDto.setMovieId(movieDto.getMovieId());
+                        int newAlbumId = movieMapper.getAlbumId();
+                        soundMovieDto.setAlbumId(newAlbumId);
+                        soundMovieDto.setAlbumNm(albumNm);
+                        soundMovieDto.setDurationMs(album.getDurationMs());
+
+                        List<SpotifyDto.Artist> artists = album.getArtists();
+                        String artistNm = artists.stream()
+                            .map(SpotifyDto.Artist::getName)
+                            .collect(Collectors.joining(","));
+                            soundMovieDto.setArtistNm(artistNm);
+                        soundMovieDto.setArtistNm(album.getArtists().get(0).getName());
+                        soundMovieDto.setSongNm(album.getName());
+                        movieDtoSongList.add(soundMovieDto);
+                        
+                    }
                 }
 
             }
@@ -566,8 +575,11 @@ public class MovieController {
             if(!movieDtoSoundImgList.isEmpty()){
                 movieMapper.insertSoundtrackImg(movieDtoSoundImgList);
                 movieService.insertFileInfo(movieDtoSoundImgList);
+            }
+            if(!movieDtoSongList.isEmpty()){
                 movieMapper.insertSoundtrackInfo(movieDtoSongList);
             }
+
         }
             
         } catch(Exception e) {
