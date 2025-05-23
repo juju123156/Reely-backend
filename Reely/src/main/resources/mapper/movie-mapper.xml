@@ -15,7 +15,7 @@
             )
     </insert>
 
-    <insert id="insertProductionInfo" parameterType="Movie">
+    <insert id="insertProductionInfo" parameterType="list">
         insert into production
             (
              production_id,
@@ -26,17 +26,19 @@
              frst_reg_date
             )
         values
+        <foreach collection="list" item="prod" separator=",">
             (
-              #{productionId},
-              #{productionKoNm},
-              #{productionEnNm},
-              #{productionLogoFileId},
-              #{productionCountry},
+              #{prod.productionId},
+              #{prod.productionKoNm},
+              #{prod.productionEnNm},
+              #{prod.productionLogoFileId},
+              #{prod.productionCountry},
               NOW()
             )
+        </foreach>
     </insert>
 
-    <insert id="insertMovieProductionInfo" parameterType="Movie">
+    <insert id="insertMovieProductionInfo" parameterType="list">
         insert into movie_production
             (
              production_id,
@@ -44,11 +46,13 @@
              frst_reg_date
             )
         values
+        <foreach collection="list" item="prod" separator=",">
             (
-              #{productionId},
-              #{movieId},
+              #{prod.productionId},
+              #{prod.movieId},
               NOW()
             )
+        </foreach>
     </insert>
 
     <insert id="insertFileInfo" parameterType="list">
@@ -72,139 +76,155 @@
         </foreach>
     </insert>
 
-    <insert id="insertCastImg" parameterType="com.reely.dto.MovieDto">
+    <insert id="insertCastImg" parameterType="list">
         INSERT INTO cast_img (
             cast_id,
             cast_logo_file_id,
             frst_reg_date
-        ) VALUES (
-            #{castId},
-            #{castLogoFileId},
-            NOW()
-        )
+        ) VALUES 
+        <foreach collection="list" item="cast" separator=",">
+            (
+                #{cast.castId},
+                #{cast.castLogoFileId},
+                NOW()
+            )
+        </foreach>
     </insert>
 
     <!-- 배우 정보 저장 -->
-    <insert id="insertCastInfo" parameterType="com.reely.dto.MovieDto">
-        INSERT INTO cast (
+    <insert id="insertCastInfo" parameterType="list">
+        INSERT INTO "cast" (
             cast_ko_nm,
             cast_en_nm,
-            role_ko_nm,
-            role_en_nm,
             file_id,
-            role_grp_nm,
             cast_etc,
             cast_birth,
             cast_death,
-            country_cd
+            country_cd,
             frst_reg_date
-        ) VALUES (
-            #{castKoNm},
-            #{castEnNm},
-            #{roleKoNm},
-            #{roleEnNm},
-            #{fileId},
-            #{roleGrpNm},
-            #{castEtc}
-            #{castBirth},
-            #{castDeath},
-            #{countryCd},
-            NOW()
-        )
-</insert>
+        ) VALUES 
+        <foreach collection="list" item="cast" separator=",">
+            (
+                #{cast.castKoNm},
+                #{cast.castEnNm},
+                #{cast.fileId},
+                #{cast.castEtc},
+                #{cast.castBirth},
+                #{cast.castDeath},
+                #{cast.countryCd},
+                NOW()
+            )
+        </foreach>
+    </insert>
     
     <!-- 배우-영화 관계 저장 -->
-    <insert id="insertCastMovieInfo" parameterType="com.reely.dto.MovieDto">
+    <insert id="insertCastMovieInfo" parameterType="list">
         INSERT INTO movie_cast (
             cast_id,
             movie_id,
+            cast_department,
+            role_ko_nm,
+            role_en_nm,
             frst_reg_date
-        ) VALUES (
-            #{castId},
-            #{movieId},
-            NOW()
-        )
+        ) VALUES 
+        <foreach collection="list" item="cast" separator=",">
+            (
+                #{cast.castId},
+                #{cast.movieId},
+                #{cast.castDepartment},
+                #{cast.roleKoNm},
+                #{cast.roleEnNm},
+                NOW()
+            )
+        </foreach>
     </insert>
     
     <!-- 스태프 정보 저장 -->
-    <insert id="insertCrewInfo" parameterType="com.reely.dto.MovieDto">
+    <insert id="insertCrewInfo" parameterType="list">
         INSERT INTO crew (
             crew_ko_nm,
             crew_en_nm,
-            crew_role,
             crew_birth,
             crew_death,
-            crew_director_yn,
             frst_reg_date
-        ) VALUES (
-            #{crewKoNm},
-            #{crewEnNm},
-            #{crewRole},
-            #{crewBirth},
-            #{crewDeath},
-            #{crewDirectorYn},
-            NOW()
-        )
+        ) VALUES 
+        <foreach collection="list" item="crew" separator=",">
+            (
+                #{crew.crewKoNm},
+                #{crew.crewEnNm},
+                #{crew.crewBirth},
+                #{crew.crewDeath},
+                NOW()
+            )
+        </foreach>
     </insert>
     
     <!-- 스태프-영화 관계 저장 -->
-    <insert id="insertCrewMovieInfo" parameterType="com.reely.dto.MovieDto">
+    <insert id="insertCrewMovieInfo" parameterType="list">
         INSERT INTO movie_crew (
             crew_id,
             movie_id,
-            role_grp_nm,
+            crew_department,
             crew_role,
+            crew_director_yn,
             frst_reg_date
-        ) VALUES (
-            #{crewId},
-            #{movieId},
-            #{roleGrpNm},
-            #{crewRole},
-            NOW()
-        )
+        ) VALUES 
+        <foreach collection="list" item="crew" separator=",">
+            (
+                #{crew.crewId},
+                #{crew.movieId},
+                #{crew.crewDepartment},
+                #{crew.crewRole},
+                #{crew.crewDirectorYn},
+                NOW()
+            )
+        </foreach>
     </insert>
 
     <select id="getMovieId" resultType="java.lang.Integer">
-        SELECT nextval('movie_id_seq')
+        SELECT nextval('movie_id_seq') AS "movieId"
     </select>
 
     <select id="getProductionId" resultType="java.lang.Integer">
-        SELECT nextval('production_id_seq')
+        SELECT nextval('production_id_seq') AS "productionId"
     </select>
 
     <select id="getCrewId" resultType="java.lang.Integer">
-        SELECT nextval('crew_id_seq')
+        SELECT nextval('crew_id_seq') AS "crewId"
     </select>
 
     <select id="getCastId" resultType="java.lang.Integer">
-        SELECT nextval('cast_id_seq')
+        SELECT nextval('cast_id_seq') AS "castId"
     </select>
 
     <select id="getFileId" resultType="java.lang.Integer">
-        SELECT nextval('file_id_seq')
+        SELECT nextval('file_id_seq') AS "fileId"
     </select>
 
     <select id="getSoundtrackId" resultType="java.lang.Integer">
-        SELECT nextval('soundtrack_id_seq')
+        SELECT nextval('soundtrack_id_seq') AS "soundtrackId"
     </select>
 
     <select id="getAlbumId" resultType="java.lang.Integer">
-        SELECT nextval('album_id_seq')
+        SELECT nextval('album_id_seq') AS "albumId"
     </select>
 
-    <insert id="insertSoundtrackImg" parameterType="com.reely.dto.MovieDto">
+    <insert id="insertSoundtrackImg" parameterType="list">
         INSERT INTO soundTrack_img (
             soundtrack_id,
             album_file_id,
             frst_reg_date
-        ) VALUES (
-            #{soundtrackId},
-            #{albumFileId},
-            NOW()
-        )
+        ) VALUES 
+        <foreach collection="list" item="track" separator=",">
+            (
+                #{track.soundtrackId},
+                #{track.albumFileId},
+                NOW()
+            )
+        </foreach>
     </insert>
 
-    <insert id="insertSoundtrackInfo" parameterType="com.reely.dto.MovieDto">
+    <insert id="insertSoundtrackInfo" parameterType="list">
         INSERT INTO soundTrack (
             soundtrack_id,
             movie_id,
@@ -214,16 +234,19 @@
             song_nm,
             artist_nm,
             frst_reg_date
-        ) VALUES (
-            #{soundtrackId},
-            #{movieId},
-            #{albumId},
-            #{albumNm},
-            #{durationMs},
-            #{songNm},
-            #{artistNm},
-            NOW()
-        )
+        ) VALUES 
+        <foreach collection="list" item="track" separator=",">
+            (
+                #{track.soundtrackId},
+                #{track.movieId},
+                #{track.albumId},
+                #{track.albumNm},
+                #{track.durationMs},
+                #{track.songNm},
+                #{track.artistNm},
+                NOW()
+            )
+        </foreach>
     </insert>
 
 </mapper>

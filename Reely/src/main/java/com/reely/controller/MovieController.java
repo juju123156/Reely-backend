@@ -280,12 +280,12 @@ public class MovieController {
             
             String posters = movieDto.getPosterUrl();
             List<MovieDto> movieDtoPstList = new ArrayList<>();
-            MovieDto movieDtoPst = new MovieDto();
+            
             List<String> posterList = (posters == null || posters.isEmpty())
                     ? new ArrayList<>()
                     : Arrays.asList(posters.split("\\|"));
-            int fileId = 0;
             for (int i = 0; i < posterList.size(); i++) {
+                MovieDto movieDtoPst = new MovieDto();
                 String posterUrl = posterList.get(i);
                 String fileExtension = CommonUtil.getExtension(posterUrl);
                 String fileName = CommonUtil.generateFileName(fileExtension);
@@ -294,32 +294,42 @@ public class MovieController {
                 movieDtoPst.setMovieId(movieDto.getMovieId());
                 movieDtoPst.setFilePath(fPath+"/"+fileName);
                 movieDtoPst.setFileTypCd("001");
-                fileId = movieMapper.getFileId();
+                int fileId = movieMapper.getFileId();
                 movieDtoPst.setFileId(fileId);
                 movieDtoPstList.add(movieDtoPst);
             }
-            movieService.insertFileInfo(movieDtoPstList);
+            if(!movieDtoPstList.isEmpty()){
+                movieService.insertFileInfo(movieDtoPstList);
+            }
 
             String stills = movieDto.getStillUrl();
             List<MovieDto> movieDtoStllList = new ArrayList<>();
+            
             List<String> stillsList = (stills == null || stills.isEmpty())
                     ? new ArrayList<>()
                     : Arrays.asList(stills.split("\\|"));
             for (int i = 0; i < stillsList.size(); i++) {
+                MovieDto movieDtoStll = new MovieDto();
+                movieDtoStll.setMovieId(movieDto.getMovieId());
                 String stillsUrl = stillsList.get(i);
                 String fileExtension = CommonUtil.getExtension(stillsUrl);
                 String fileName = CommonUtil.generateFileName(fileExtension);
                 String fPath = localFilePath+filePath+"/stills"; 
                 CommonUtil.fileDownloader(stillsUrl, fPath, fileName);
-                movieDto.setFilePath(fPath+"/"+fileName);
-                movieDto.setFileTypCd("002");
-                fileId = movieMapper.getFileId();
-                movieDto.setFileId(fileId);
-                movieDtoStllList.add(movieDto);
+                movieDtoStll.setFilePath(fPath+"/"+fileName);
+                movieDtoStll.setFileTypCd("002");
+                int fileId = movieMapper.getFileId();
+                movieDtoStll.setFileId(fileId);
+                movieDtoStllList.add(movieDtoStll);
             }
-            movieService.insertFileInfo(movieDtoStllList);
+            if(!movieDtoStllList.isEmpty()){
+                movieService.insertFileInfo(movieDtoStllList);
+            }
+
             List<MovieDto> movieDtoVodList = new ArrayList<>();
+            
             for (HashMap<String, String> vod : vods) {
+                MovieDto movieDtoVod = new MovieDto();
                 String vodUrl = vod.get("vodUrl");
                 String originalUrl = vodUrl.replaceAll("https://www\\.kmdb\\.or\\.kr/trailer/trailerPlayPop\\?pFileNm=(.+)", 
                 "https://www.kmdb.or.kr/trailer/play/$1");
@@ -329,16 +339,17 @@ public class MovieController {
                 //String getVodUrl = CommonUtil.extractRealMp4Url(vodUrlHtml); // 메서드 이름 수정
                 //String decodedUrl = URLDecoder.decode(getVodUrl, "UTF-8");
                 CommonUtil.vodFileDownloader(originalUrl, fPath, fileName);
-                movieDto.setFilePath(fPath+"/"+fileName);
-                movieDto.setFileTypCd("003");
-                fileId = movieMapper.getFileId();
-                movieDto.setFileId(fileId);
-                movieDtoVodList.add(movieDto);
+                movieDtoVod.setMovieId(movieDto.getMovieId());
+                movieDtoVod.setFilePath(fPath+"/"+fileName);
+                movieDtoVod.setFileTypCd("003");
+                int fileId = movieMapper.getFileId();
+                movieDtoVod.setFileId(fileId);
+                movieDtoVodList.add(movieDtoVod);
 
             }
-            movieService.insertFileInfo(movieDtoVodList);
-            movieDto.setFilePath("");
-            movieDto.setFileTypCd("");
+            if(!movieDtoVodList.isEmpty()){
+                movieService.insertFileInfo(movieDtoVodList);
+            }
             
         } catch (Exception e) {
             e.printStackTrace();            
@@ -363,38 +374,45 @@ public class MovieController {
 
             List<MovieDto> movieDtoPrdList = new ArrayList<>();
             List<ProductionCompany> pdCompList = tmdbDto.getProductionCompanies();
-            int fileId = 0;
+            Boolean isFile = false;
             for (ProductionCompany pd : pdCompList){
-                movieDto.setProductionEnNm(pd.getName());
-                movieDto.setProductionCountry(pd.getOriginCountry());
+                MovieDto movieDtoComp = new MovieDto();
+                movieDtoComp.setProductionEnNm(pd.getName());
+                movieDtoComp.setProductionCountry(pd.getOriginCountry());
                 
                 // logoPath가 null이 아닌 경우에만 이미지 다운로드 시도
                 if (pd.getLogoPath() != null && !pd.getLogoPath().isEmpty()) {
+                    isFile = true;
+
                     String tmImgUrl = imageBaseUrl + pd.getLogoPath();
                     String fileExtension = CommonUtil.getExtension(tmImgUrl);
                     String fileName = CommonUtil.generateFileName(fileExtension);
                     String fPath = localFilePath + filePath + "/logo"; 
                     CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
-                    movieDto.setFilePath(fPath + "/" + fileName);
-                    movieDto.setFileTypCd("004");
-                    fileId = movieMapper.getFileId();
+                    movieDtoComp.setMovieId(movieDto.getMovieId());
+                    movieDtoComp.setFilePath(fPath + "/" + fileName);
+                    movieDtoComp.setFileTypCd("004");
+                    int fileId = movieMapper.getFileId();
                     int productionId = movieMapper.getProductionId();
-                    movieDto.setProductionId(productionId);
-                    movieDto.setProductionLogoFileId(fileId);
-                    movieDto.setFileId(fileId);
-                    movieDtoPrdList.add(movieDto);
-                    movieMapper.insertProductionInfo(movieDto);
-                    movieMapper.insertMovieProductionInfo(movieDto);
+                    movieDtoComp.setProductionId(productionId);
+                    movieDtoComp.setProductionLogoFileId(fileId);
+                    movieDtoComp.setFileId(fileId);
+                    movieDtoPrdList.add(movieDtoComp);
                 } else {
                     // logoPath가 null인 경우 기본 처리
                     int productionId = movieMapper.getProductionId();
-                    movieDto.setProductionId(productionId);
-                    movieMapper.insertProductionInfo(movieDto);
-                    movieMapper.insertMovieProductionInfo(movieDto);
+                    movieDtoComp.setProductionId(productionId);
+                    movieDtoPrdList.add(movieDtoComp);
                 }
             }
             if(!movieDtoPrdList.isEmpty()){
-                movieService.insertFileInfo(movieDtoPrdList);
+                
+                if(isFile){
+                    movieService.insertFileInfo(movieDtoPrdList);
+                }
+                
+                movieMapper.insertProductionInfo(movieDtoPrdList);
+                movieMapper.insertMovieProductionInfo(movieDtoPrdList);
             }
 
             // 출연진 정보 조회
@@ -404,18 +422,19 @@ public class MovieController {
 
             if (castNode != null && castNode.isArray()) {
                 List<MovieDto> movieDtoCastList = new ArrayList<>();
+                List<MovieDto> movieDtoCastImgList = new ArrayList<>();
                 for (JsonNode actor : castNode) {
+                    MovieDto movieDtoCast = new MovieDto();
                     String actorName = actor.get("name").asText();
                     String character = actor.get("character").asText();
-                    String profilePath = actor.get("profile_path").asText();
+                    String profilePath = actor.get("profile_path").isNull() ? null : actor.get("profile_path").asText();
                     
                     // 배우 정보 저장
-                    movieDto.setCastEnNm(actorName);
-                    movieDto.setRoleEnNm(character);
+                    movieDtoCast.setCastEnNm(actorName);
+                    movieDtoCast.setCastDepartment(character);
                     int castId = movieMapper.getCastId();
-                    movieDto.setCastId(castId);
-                    movieMapper.insertCastInfo(movieDto);
-                    
+                    movieDtoCast.setCastId(castId);
+                    movieDtoCastList.add(movieDtoCast);
                     // 배우 프로필 이미지 다운로드 및 저장
                     if (profilePath != null && !profilePath.isEmpty()) {
                         String profileUrl = imageBaseUrl + profilePath;
@@ -424,19 +443,23 @@ public class MovieController {
                         String fPath = localFilePath + filePath + "/cast_profile";
                         CommonUtil.fileDownloader(profileUrl, fPath, fileName);
                         
-                        movieDto.setFilePath(fPath + "/" + fileName);
-                        movieDto.setFileTypCd("005"); // cast profile 이미지 타입 코드
-                        fileId = movieMapper.getFileId();
+                        movieDtoCast.setFilePath(fPath + "/" + fileName);
+                        movieDtoCast.setFileTypCd("005"); // cast profile 이미지 타입 코드
+                        int fileId = movieMapper.getFileId();
                         System.out.println("400 : "+fileId);
-                        movieDto.setCastLogoFileId(fileId);
-                        movieMapper.insertCastImg(movieDto);
-                        movieDto.setFileId(fileId);
-                        movieDtoCastList.add(movieDto);
+                        movieDtoCast.setCastLogoFileId(fileId);
+                        
+                        movieDtoCast.setFileId(fileId);
+                        movieDtoCastImgList.add(movieDtoCast);
                     }
                 }
 
                 if(!movieDtoCastList.isEmpty()){
-                    movieService.insertFileInfo(movieDtoCastList);
+                     // 배우 정보 저장
+                    movieMapper.insertCastInfo(movieDtoCastList);
+                    // 배우 프로필 이미지 저장
+                    movieMapper.insertCastImg(movieDtoCastImgList);
+                    movieService.insertFileInfo(movieDtoCastImgList);
                 }
             }
 
@@ -444,17 +467,18 @@ public class MovieController {
             if (crewNode != null && crewNode.isArray()) {
 
                 List<MovieDto> movieDtoCrewList = new ArrayList<>();
+                List<MovieDto> crewImgList = new ArrayList<>();
                 for (JsonNode crew : crewNode) {
+                    MovieDto movieDtoCrew = new MovieDto();
                     String crewName = crew.get("name").asText();
                     String job = crew.get("job").asText();
                     String department = crew.get("department").asText();
-                    String profilePath = crew.get("profile_path").asText();
-                    
+                    String profilePath = crew.get("profile_path").isNull() ? null : crew.get("profile_path").asText();
+
                     // 스태프 정보 저장
-                    movieDto.setCrewEnNm(crewName);
-                    movieDto.setCrewRole(job);
-                    movieDto.setCrewDepartment(department);
-                    movieMapper.insertCrewInfo(movieDto);
+                    movieDtoCrew.setCrewEnNm(crewName);
+                    movieDtoCrew.setCrewRole(job);
+                    movieDtoCrew.setCrewDepartment(department);
 
                     // 프로필 이미지 다운로드 및 저장
                     if (profilePath != null && !profilePath.isEmpty()) {
@@ -464,17 +488,23 @@ public class MovieController {
                         String fPath = localFilePath + filePath + "/crew_profile";
                         CommonUtil.fileDownloader(profileUrl, fPath, fileName);
                         
-                        movieDto.setFilePath(fPath + "/" + fileName);
-                        movieDto.setFileTypCd("006"); // crew profile 이미지 타입 코드
-                        fileId = movieMapper.getFileId();
+                        movieDtoCrew.setFilePath(fPath + "/" + fileName);
+                        movieDtoCrew.setFileTypCd("006"); // crew profile 이미지 타입 코드
+                        int fileId = movieMapper.getFileId();
                         System.out.println("434 : "+fileId);
-                        movieDto.setFileId(fileId);
-                        movieDtoCrewList.add(movieDto);
+                        movieDtoCrew.setFileId(fileId);
+                        crewImgList.add(movieDtoCrew);
                         
                     }
                 }
+
                 if(!movieDtoCrewList.isEmpty()){
-                    movieService.insertFileInfo(movieDtoCrewList);
+                    // 스태프 정보 저장
+                    movieMapper.insertCrewInfo(movieDtoCrewList);
+                    // 스태프 영화 관계 정보 저장
+                    movieMapper.insertCrewMovieInfo(movieDtoCrewList);
+                    // 스태프 프로필 이미지 저장
+                    movieService.insertFileInfo(crewImgList);
                 }
             }
 
@@ -482,18 +512,17 @@ public class MovieController {
 
         if (spotifyDto != null && spotifyDto.getTracks() != null && spotifyDto.getTracks().getItems() != null) {
             List<MovieDto> movieDtoSoundImgList = new ArrayList<>();
+            List<MovieDto> movieDtoSongList = new ArrayList<>();
             for (SpotifyDto.Item track : spotifyDto.getTracks().getItems()) {
                 // OST 정보 처리 로직
-             
+                MovieDto soundImgDto = new MovieDto();
                 String albumId = track.getAlbum().getId();
                 String albumNm = track.getAlbum().getName();
                 List<SpotifyDto.Image> albumImgs = track.getAlbum().getImages();
-                MovieDto soundImgDto = new MovieDto();
                 int soundTrackId = movieMapper.getSoundtrackId();
                 soundImgDto.setSoundTrackId(soundTrackId);
                 for(SpotifyDto.Image img : albumImgs){
-                    fileId = movieMapper.getFileId();
-                    System.out.println("455 : "+ fileId);
+                    int fileId = movieMapper.getFileId();
                     soundImgDto.setFileId(fileId);
                     String albumImgUrl =  img.getUrl();
                     String fileExtension = CommonUtil.getExtension(albumImgUrl);
@@ -505,17 +534,17 @@ public class MovieController {
                     soundImgDto.setImgSzWidth(img.getWidth());
                     soundImgDto.setImgSzHight(img.getWidth());
                     soundImgDto.setAlbumImgId(fileId);
-                    movieMapper.insertSoundtrackImg(soundImgDto);
                     movieDtoSoundImgList.add(movieDto);
                 }
 
                 // 앨범 수록곡 조회
                 int limit = 20;
                 SpotifyAlbumTracksDto spotifyAlbumTracksDto = movieService.getSpotifyAlbumTracks(albumId, limit);
-                MovieDto soundMovieDto = new MovieDto();
+                
                 for (SpotifyDto.Item album : spotifyAlbumTracksDto.getItems()) {
+                    MovieDto soundMovieDto = new MovieDto();
                     soundMovieDto.setSoundTrackId(soundTrackId);
-                    soundMovieDto.setMovieId(soundTrackId);
+                    soundMovieDto.setMovieId(movieDto.getMovieId());
                     int newAlbumId = movieMapper.getAlbumId();
                     soundMovieDto.setAlbumId(newAlbumId);
                     soundMovieDto.setAlbumNm(albumNm);
@@ -528,26 +557,22 @@ public class MovieController {
                         soundMovieDto.setArtistNm(artistNm);
                     soundMovieDto.setArtistNm(album.getArtists().get(0).getName());
                     soundMovieDto.setSongNm(album.getName());
+                    movieDtoSongList.add(soundMovieDto);
                     
-                    
-                    movieMapper.insertSoundtrackInfo(soundMovieDto);
                 }
+
             }
+
             if(!movieDtoSoundImgList.isEmpty()){
+                movieMapper.insertSoundtrackImg(movieDtoSoundImgList);
                 movieService.insertFileInfo(movieDtoSoundImgList);
+                movieMapper.insertSoundtrackInfo(movieDtoSongList);
             }
         }
             
         } catch(Exception e) {
             e.printStackTrace();  
         }
-
-            // movie 테이블에 저장
-            // cast 테이블에 저장
-            // cast_movie 테이블에 저장
-            // crew 테이블에 저장
-            // crew_movie 테이블에 저장
-            // file 테이블에 저장
 
         return movieDto;
     }

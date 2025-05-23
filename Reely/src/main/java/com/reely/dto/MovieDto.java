@@ -284,6 +284,9 @@ public class MovieDto {
     private int soundtrackId;
 
     private int albumId;
+
+    private int albumFileId;
+    
     // 재생 길이
     private int durationMs;
 

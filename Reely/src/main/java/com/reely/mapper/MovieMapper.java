@@ -10,14 +10,14 @@ import com.reely.dto.MovieDto;
 public interface MovieMapper {
 
     int insertCountryInfo(MovieDto movieDto);
-    int insertProductionInfo(MovieDto movieDto);
-    int insertMovieProductionInfo(MovieDto movieDto);
+    int insertProductionInfo(List<MovieDto> movieDto);
+    int insertMovieProductionInfo(List<MovieDto> movieDto);
     int insertFileInfo(List<MovieDto>  movieDto);
-    int insertCastImg(MovieDto movieDto);
-    void insertCastInfo(MovieDto movieDto);
-    void insertCastMovieInfo(MovieDto movieDto);
-    void insertCrewInfo(MovieDto movieDto);
-    void insertCrewMovieInfo(MovieDto movieDto);
+    int insertCastImg(List<MovieDto> movieDto);
+    void insertCastInfo(List<MovieDto> movieDto);
+    void insertCastMovieInfo(List<MovieDto> movieDto);
+    void insertCrewInfo(List<MovieDto> movieDto);
+    void insertCrewMovieInfo(List<MovieDto> movieDto);
     Integer getMovieId();
     Integer getProductionId();
     Integer getCrewId();
@@ -25,6 +25,6 @@ public interface MovieMapper {
     Integer getFileId();
     Integer getSoundtrackId();
     Integer getAlbumId();
-    int insertSoundtrackImg(MovieDto movieDto);
-    int insertSoundtrackInfo(MovieDto movieDto);
+    int insertSoundtrackImg(List<MovieDto> movieDto);
+    int insertSoundtrackInfo(List<MovieDto> movieDto);
 }
