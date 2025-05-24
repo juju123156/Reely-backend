@@ -226,7 +226,6 @@
 
     <insert id="insertSoundtrackInfo" parameterType="list">
         INSERT INTO soundTrack (
-            soundtrack_id,
             movie_id,
             album_id,
             album_nm,
@@ -237,7 +236,6 @@
         ) VALUES 
         <foreach collection="list" item="track" separator=",">
             (
-                #{track.soundtrackId},
                 #{track.movieId},
                 #{track.albumId},
                 #{track.albumNm},

@@ -220,7 +220,9 @@ public class MovieController {
                     .collect(Collectors.toList());
             }
 
+            int newMovieId = movieMapper.getMovieId();
             movieDto = MovieDto.builder()
+                               .movieId(newMovieId)
                                .movieKoNm(kmdbDto.getTitle() != null ? kmdbDto.getTitle(): "")
                                .movieEnNm(kmdbDto.getTitleOrg() != null ? kmdbDto.getTitleOrg(): "")
                                .moviePrDt(kmdbDto.getProdYear() != null ? kmdbDto.getProdYear(): "")
@@ -515,11 +517,11 @@ public class MovieController {
         if (spotifyDto != null && spotifyDto.getTracks() != null && spotifyDto.getTracks().getItems() != null) {
             List<MovieDto> movieDtoSoundImgList = new ArrayList<>();
             List<MovieDto> movieDtoSongList = new ArrayList<>();
-            Set<Integer> procedSoundTrackIds = new HashSet<>();
+            Set<Integer> procedAlbumIds = new HashSet<>();
             for (SpotifyDto.Item track : spotifyDto.getTracks().getItems()) {
-                int soundTrackId = movieMapper.getSoundtrackId();
-                if (!procedSoundTrackIds.contains(soundTrackId)) {
-                    procedSoundTrackIds.add(soundTrackId);
+                int newAlbumId = movieMapper.getAlbumId();
+                if (!procedAlbumIds.contains(newAlbumId)) {
+                    procedAlbumIds.add(newAlbumId);
                     // OST 정보 처리 로직
                     
                     String albumId = track.getAlbum().getId();
@@ -528,7 +530,7 @@ public class MovieController {
 
                     for(SpotifyDto.Image img : albumImgs){
                         MovieDto soundImgDto = new MovieDto();
-                        soundImgDto.setSoundTrackId(soundTrackId);
+                        soundImgDto.setAlbumId(newAlbumId);
                         int fileId = movieMapper.getFileId();
                         soundImgDto.setFileId(fileId);
                         soundImgDto.setAlbumFileId(fileId);
@@ -537,6 +539,7 @@ public class MovieController {
                         String fileName = CommonUtil.generateFileName("jpg");
                         String fPath = localFilePath + filePath + "/album_img";
                         CommonUtil.fileDownloader(albumImgUrl, fPath, fileName);
+                        Thread.sleep(200); // 200ms = 0.2초
                         soundImgDto.setFilePath(fPath + "/" + fileName);
                         soundImgDto.setFileTypCd("007");
                         soundImgDto.setImgSzWidth(img.getWidth());
@@ -551,9 +554,8 @@ public class MovieController {
                     
                     for (SpotifyDto.Item album : spotifyAlbumTracksDto.getItems()) {
                         MovieDto soundMovieDto = new MovieDto();
-                        soundMovieDto.setSoundTrackId(soundTrackId);
+                        soundMovieDto.setAlbumId(newAlbumId);
                         soundMovieDto.setMovieId(movieDto.getMovieId());
-                        int newAlbumId = movieMapper.getAlbumId();
                         soundMovieDto.setAlbumId(newAlbumId);
                         soundMovieDto.setAlbumNm(albumNm);
                         soundMovieDto.setDurationMs(album.getDurationMs());
