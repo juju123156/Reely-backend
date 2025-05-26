@@ -118,4 +118,9 @@ public class MovieServiceImpl implements MovieService {
     public int insertFileInfo(List<MovieDto>  movieDto) {
         return movieMapper.insertFileInfo(movieDto);
     }
+
+    @Override
+    public MovieDto getMovieInfo(int movieId) {
+        return movieMapper.getMovieInfo(movieId);
+    }
 }

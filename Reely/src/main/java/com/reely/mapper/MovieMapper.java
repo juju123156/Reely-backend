@@ -27,4 +27,5 @@ public interface MovieMapper {
     Integer getAlbumId();
     int insertSoundtrackImg(List<MovieDto> movieDto);
     int insertSoundtrackInfo(List<MovieDto> movieDto);
+    MovieDto getMovieInfo(int movieId);
 }
