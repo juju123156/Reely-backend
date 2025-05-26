@@ -247,4 +247,58 @@
         </foreach>
     </insert>
 
+    <insert id="insertMovieInfo" parameterType="MovieDto">
+        INSERT INTO movie (
+            movie_id,
+            movie_ko_nm,
+            movie_en_nm,
+            movie_pr_dt,
+            movie_runtime,
+            movie_open_dt,
+            movie_warch_grd,
+            movie_plot,
+            movie_awards,
+            show_type_cd,
+            type_nm,
+            genre_alt,
+            show_type_group_nm,
+            show_type_nm,
+            watch_grade_nm,
+            episodes,
+            rated_yn,
+            rep_rat_date,
+            rating_main,
+            keywords,
+            theme_song,
+            soundtrack,
+            f_location,
+            frst_reg_date
+        ) VALUES (
+            #{movieId},
+            #{movieKoNm},
+            #{movieEnNm},
+            #{moviePrDt},
+            #{movieRuntime},
+            #{movieOpenDt},
+            #{movieWarchGrd},
+            #{moviePlot},
+            #{movieAwards},
+            #{showTypeCd},
+            #{typeNm},
+            #{genreAlt},
+            #{showTypeGroupNm},
+            #{showTypeNm},
+            #{watchGradeNm},
+            #{episodes},
+            #{ratedYn},
+            #{repRatDate},
+            #{ratingMain},
+            #{keywords},
+            #{themeSong},
+            #{soundtrack},
+            #{fLocation},
+            NOW()
+        )
+    </insert>
+
 </mapper>

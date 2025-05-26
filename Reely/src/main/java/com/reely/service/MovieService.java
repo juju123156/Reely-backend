@@ -14,7 +14,7 @@ public interface MovieService {
     SpotifyAlbumTracksDto getSpotifyAlbumTracks(String albumId, int limit);
     int insertFileInfo(List<MovieDto> movieDto);
     MovieDto getMovieInfo(int movieId);
-
+    MovieDto insertDirectorsInfo(MovieDto movieDto);
 
 
 

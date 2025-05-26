@@ -149,6 +149,11 @@ public class MovieController {
                     })
                     .collect(Collectors.toList());
             }
+            MovieDto directMovicDto = new MovieDto();
+            directMovicDto.setDirectorsList(directors);
+            directMovicDto.setMovieId();
+            
+            movieService.insertDirectorsInfo(directors);
 
             List<KmdbDto.Rating> ratingList = new ArrayList<>();
             String grade = "";
@@ -228,14 +233,12 @@ public class MovieController {
                                .moviePrDt(kmdbDto.getProdYear() != null ? kmdbDto.getProdYear(): "")
                                .movieRuntime(kmdbDto.getRuntime() != null ? Integer.parseInt(kmdbDto.getRuntime()): null)
                                .movieOpenDt(kmdbDto.getRepRlsDate() != null ? kmdbDto.getRepRlsDate(): "")
-                               .movieAutidsList(directors)
                                .movieWarchGrd(grade)
                                .movieOpenDt(kmdbDto.getRepRlsDate() != null ? kmdbDto.getRepRlsDate(): "")
                                .moviePlot(plotText)
                                .movieAwards(awards)
                                .showTypeCd(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
                                .actors(actors)
-                               .movieAutidsList(casts)
                                //.countryNm(kmdbDto.getNation() != null ? kmdbDto.getNation(): "")
                                //.productionKoNm(kmdbDto.getCompany() != null ? kmdbDto.getCompany(): "")
                                .productionEnNm(kmdbDto.getPart() != null ? kmdbDto.getPart(): "")
@@ -254,10 +257,10 @@ public class MovieController {
                                .stillUrl(kmdbDto.getStlls() != null ? kmdbDto.getStlls(): "")
                                .vods(vods)
                                .themeSong(kmdbDto.getThemeSong() != null ? kmdbDto.getThemeSong(): "")
-                               .soundtrack(kmdbDto.getSoundtrack() != null ? kmdbDto.getSoundtrack(): "")
-                               .fLocation(kmdbDto.getFLocation() != null ? kmdbDto.getFLocation(): "")
+                               .filmingLocation(kmdbDto.getFLocation() != null ? kmdbDto.getFilmingLocation(): "")
                                .build();
 
+            movieMapper.insertMovieInfo(movieDto);
             //movieDto.setOriginalCountryYn("Y");
             
             // 한영 구분 필요

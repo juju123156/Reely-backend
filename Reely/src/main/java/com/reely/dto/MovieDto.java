@@ -34,7 +34,7 @@ public class MovieDto {
     private String  movieAutids;
     
     // 감독 이름 (복수일 수 있음)
-    private List<HashMap<String, String>> movieAutidsList;
+    private List<HashMap<String, String>> directorsList;
 
     // 감독 고유번호
     private String movieAutidsNo;
@@ -123,6 +123,9 @@ public class MovieDto {
     // 감독 여부 (Y/N)
     private String crewDirectorYn;
 
+    // 스텝 이름 
+    private List<HashMap<String, String>> crewList;
+
     // 제작국가 ID
     private int countryId;
 
@@ -159,13 +162,13 @@ public class MovieDto {
 
     /* Kobis */
     // 제작상태명
-    private String prdtStatNm;
+    private String prdtStat;
 
     // 영화유형명
     private String typeNm;
 
     // 영화장르 (전체)
-    private String genreAlt;
+    private String genre;
 
     // 배우
     private List<HashMap<String, String>> actors;
@@ -174,13 +177,13 @@ public class MovieDto {
     private String showTypes;
 
     // 상영형태 구분명
-    private String showTypeGroupNm;
+    private String showTypeGrp;
 
     // 상영형태명
-    private String showTypeNm;
+    private String showType;
 
     // 관람등급 명칭
-    private String watchGradeNm;
+    private String watchGrade;
 
     // 참여 영화사 분야명
     private String companyPartNm;
@@ -273,7 +276,7 @@ public class MovieDto {
     private String soundtrack;
 
     // 촬영장소
-    private String fLocation;
+    private String filmingLocation;
 
     // 영화 제작사 국가
     private String productionCountry;
