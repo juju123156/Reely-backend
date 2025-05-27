@@ -20,6 +20,13 @@ public class MovieDto {
 
     // 영화 ID
     private int movieId;
+
+    // tmdb 영화 ID
+    private String tmdbMovieId;
+
+    // kmdb 영화 ID
+    private String kmdbMovieId;
+
     // 영화명 (국문)
     private String movieKoNm;    
     // 영화명 (영문)     
@@ -30,9 +37,7 @@ public class MovieDto {
     private Integer movieRuntime;  
     // 개봉일  
     private String movieOpenDt;
-    // 감독 이름    
-    private String  movieAutids;
-    
+
     // 감독 이름 (복수일 수 있음)
     private List<HashMap<String, String>> directorsList;
 
@@ -121,10 +126,16 @@ public class MovieDto {
     private String crewDeath;
 
     // 감독 여부 (Y/N)
-    private String crewDirectorYn;
+    private String directorYn;
 
-    // 스텝 이름 
-    private List<HashMap<String, String>> crewList;
+    // 감독 바이오(감독정보)
+    private String biography;
+
+    // 감독 필모(감독작품정보)
+    private String filmography;
+
+    // 스텝 id 
+    private List<String> crewIdList;
 
     // 제작국가 ID
     private int countryId;

@@ -149,11 +149,6 @@ public class MovieController {
                     })
                     .collect(Collectors.toList());
             }
-            MovieDto directMovicDto = new MovieDto();
-            directMovicDto.setDirectorsList(directors);
-            directMovicDto.setMovieId();
-            
-            movieService.insertDirectorsInfo(directors);
 
             List<KmdbDto.Rating> ratingList = new ArrayList<>();
             String grade = "";
@@ -225,7 +220,6 @@ public class MovieController {
                     .collect(Collectors.toList());
             }
 
-            int newMovieId = movieMapper.getMovieId();
             movieDto = MovieDto.builder()
                                .movieId(newMovieId)
                                .movieKoNm(kmdbDto.getTitle() != null ? kmdbDto.getTitle(): "")
@@ -238,26 +232,18 @@ public class MovieController {
                                .moviePlot(plotText)
                                .movieAwards(awards)
                                .showTypeCd(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
-                               .actors(actors)
-                               //.countryNm(kmdbDto.getNation() != null ? kmdbDto.getNation(): "")
-                               //.productionKoNm(kmdbDto.getCompany() != null ? kmdbDto.getCompany(): "")
-                               .productionEnNm(kmdbDto.getPart() != null ? kmdbDto.getPart(): "")
-                               .prdtStatNm(kobisDto.getPrdtStatNm() != null ? kobisDto.getPrdtStatNm(): "")
-                               .typeNm(kobisDto.getTypeNm() != null ? kobisDto.getTypeNm(): "")
-                               .genreAlt(kobisDto.getGenreAlt() != null ? kobisDto.getGenreAlt(): "")
-                               .showTypeGroupNm(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
-                               .showTypeNm(kmdbDto.getType() != null ? kmdbDto.getType(): "")
-                               .watchGradeNm(kmdbDto.getRating() != null ? kmdbDto.getRating(): "")
+                               .prdtStat(kobisDto.getPrdtStatNm() != null ? kobisDto.getPrdtStatNm(): "")
+                               .showTypes(kobisDto.getTypeNm() != null ? kobisDto.getTypeNm(): "")
+                               .genre(kobisDto.getGenreAlt() != null ? kobisDto.getGenreAlt(): "")
+                               .showTypeGrp(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
+                               .showType(kmdbDto.getType() != null ? kmdbDto.getType(): "")
+                               .watchGrade(kmdbDto.getRating() != null ? kmdbDto.getRating(): "")
                                .episodes(kmdbDto.getEpisodes() != null ? kmdbDto.getEpisodes(): "")
                                .ratedYn(kmdbDto.getRatedYn() != null ? kmdbDto.getRatedYn(): "")
                                .repRatDate(kmdbDto.getRepRatDate() != null ? kmdbDto.getRepRatDate(): "")
                                .ratingMain(kmdbDto.getRatingMain() != null ? kmdbDto.getRatingMain(): "")
                                .keywords(kmdbDto.getKeywords() != null ? kmdbDto.getKeywords(): "")
-                               .posterUrl(kmdbDto.getPosters() != null ? kmdbDto.getPosters(): "")
-                               .stillUrl(kmdbDto.getStlls() != null ? kmdbDto.getStlls(): "")
-                               .vods(vods)
-                               .themeSong(kmdbDto.getThemeSong() != null ? kmdbDto.getThemeSong(): "")
-                               .filmingLocation(kmdbDto.getFLocation() != null ? kmdbDto.getFilmingLocation(): "")
+                               .filmingLocation(kmdbDto.getFLocation() != null ? kmdbDto.getFLocation(): "")
                                .build();
 
             movieMapper.insertMovieInfo(movieDto);
@@ -378,6 +364,14 @@ public class MovieController {
             JSONObject jsonObject = (JSONObject) parser.parse(tmJsonDetail);
             TmdbDto tmdbDto = objectMapper.readValue(jsonObject.toJSONString(), TmdbDto.class);
             System.out.println("===========================tmdb json===========================" + tmdbDto.toString());
+
+            MovieDto directMovieDto = new MovieDto();
+            int newMovieId = movieMapper.getMovieId();
+            directMovieDto.setDirectorsList(directors);
+            directMovieDto.setMovieId(newMovieId);
+            
+            movieService.insertDirectorsInfo(directors);
+
 
             List<MovieDto> movieDtoPrdList = new ArrayList<>();
             List<ProductionCompany> pdCompList = tmdbDto.getProductionCompanies();
