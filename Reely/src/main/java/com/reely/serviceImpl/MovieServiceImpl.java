@@ -280,15 +280,16 @@ public class MovieServiceImpl implements MovieService {
             }
     
             if (!movieDtoList.isEmpty()) {
-                // crew 정보 저장
+                // 스태프 정보 저장
                 movieMapper.insertCrewInfo(movieDtoList);
-                // 영화-crew 관계 정보 저장
+                // 영화-스태프 관계 정보 저장
                 movieMapper.insertCrewMovieInfo(movieDtoList);
             }
     
             if (!crewImgList.isEmpty()) {
-                // crew 프로필 이미지 저장
+                // 스태프 프로필 이미지 저장
                 movieService.insertFileInfo(crewImgList);
+                // 스태프 프로필 이미지 저장
                 movieMapper.insertCrewImg(crewImgList);
             }
     

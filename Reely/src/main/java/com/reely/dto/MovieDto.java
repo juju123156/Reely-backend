@@ -92,6 +92,12 @@ public class MovieDto {
     // 배우 별세일
     private String castDeath;
 
+    // 배우 국적
+    private String castNationality;
+
+    // 배우 필모그래피(출연작)
+    private List<String> castFilmography;
+
     // 배우 로코 이미지 ID
     private int castLogoFileId;
 
@@ -136,6 +142,9 @@ public class MovieDto {
 
     // 스텝 id 
     private List<String> crewIdList;
+
+    // 성별
+    private String gender;
 
     // 제작국가 ID
     private int countryId;

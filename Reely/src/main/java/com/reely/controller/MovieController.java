@@ -219,7 +219,7 @@ public class MovieController {
                     })
                     .collect(Collectors.toList());
             }
-
+            int newMovieId = movieMapper.getMovieId();
             movieDto = MovieDto.builder()
                                .movieId(newMovieId)
                                .movieKoNm(kmdbDto.getTitle() != null ? kmdbDto.getTitle(): "")
@@ -365,12 +365,6 @@ public class MovieController {
             TmdbDto tmdbDto = objectMapper.readValue(jsonObject.toJSONString(), TmdbDto.class);
             System.out.println("===========================tmdb json===========================" + tmdbDto.toString());
 
-            MovieDto directMovieDto = new MovieDto();
-            int newMovieId = movieMapper.getMovieId();
-            directMovieDto.setDirectorsList(directors);
-            directMovieDto.setMovieId(newMovieId);
-            
-            movieService.insertDirectorsInfo(directors);
 
 
             List<MovieDto> movieDtoPrdList = new ArrayList<>();
@@ -430,11 +424,62 @@ public class MovieController {
                     String character = actor.get("character").asText();
                     String profilePath = actor.get("profile_path").isNull() ? null : actor.get("profile_path").asText();
                     
-                    // 배우 정보 저장
-                    movieDtoCast.setCastEnNm(actorName);
+                    // KMDB에서 배우 한글/영문 이름 매칭
+                    String castKoNm = null;
+                    String castEnNm = actorName;
+                    String castBirth = null;
+                    String castDeath = null;
+                    String castNationality = null;
+                    List<String> filmography = new ArrayList<>();
+                    if (kmdbDto != null && kmdbDto.getActors() != null && kmdbDto.getActors().getActor() != null) {
+                        for (KmdbDto.Actor kmdbActor : kmdbDto.getActors().getActor()) {
+                            if (kmdbActor.getActorEnNm() != null && kmdbActor.getActorEnNm().equalsIgnoreCase(actorName)) {
+                                castKoNm = kmdbActor.getActorNm();
+                                castEnNm = kmdbActor.getActorEnNm();
+                                break;
+                            }
+                        }
+                    }
+                    movieDtoCast.setCastKoNm(castKoNm);
+                    movieDtoCast.setCastEnNm(castEnNm);
                     movieDtoCast.setCastDepartment(character);
                     int castId = movieMapper.getCastId();
                     movieDtoCast.setCastId(castId);
+
+                    // TMDB 인물 검색 (영문 이름 기준)
+                    try {
+                        String tmdbPersonSearch = tmdbMovieClient.searchPerson("Bearer " + tmdbKey, castEnNm, "en-US", 1);
+                        JsonNode personRoot = objectMapper.readTree(tmdbPersonSearch);
+                        JsonNode personResults = personRoot.get("results");
+                        if (personResults != null && personResults.isArray() && personResults.size() > 0) {
+                            JsonNode person = personResults.get(0);
+                            String personId = person.get("id").asText();
+                            // 상세 정보
+                            String tmdbPersonDetail = tmdbMovieClient.getPersonDetails(personId, "Bearer " + tmdbKey, "en-US", "movie_credits,images");
+                            JsonNode personDetailRoot = objectMapper.readTree(tmdbPersonDetail);
+                            castBirth = personDetailRoot.has("birthday") && !personDetailRoot.get("birthday").isNull() ? personDetailRoot.get("birthday").asText() : null;
+                            castDeath = personDetailRoot.has("deathday") && !personDetailRoot.get("deathday").isNull() ? personDetailRoot.get("deathday").asText() : null;
+                            castNationality = personDetailRoot.has("place_of_birth") && !personDetailRoot.get("place_of_birth").isNull() ? personDetailRoot.get("place_of_birth").asText() : null;
+                            // filmography(출연작)
+                            if (personDetailRoot.has("movie_credits")) {
+                                JsonNode credits = personDetailRoot.get("movie_credits");
+                                if (credits.has("cast")) {
+                                    JsonNode filmos = credits.get("cast");
+                                    for (JsonNode filmo : filmos) {
+                                        if (filmo.has("title")) {
+                                            filmography.add(filmo.get("title").asText());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    movieDtoCast.setCastBirth(castBirth);
+                    movieDtoCast.setCastDeath(castDeath);
+                    movieDtoCast.setCastNationality(castNationality);
+                    movieDtoCast.setCastFilmography(filmography);
                     movieDtoCastList.add(movieDtoCast);
                     // 배우 프로필 이미지 다운로드 및 저장
                     if (profilePath != null && !profilePath.isEmpty()) {
@@ -465,49 +510,44 @@ public class MovieController {
             }
 
             JsonNode crewNode = creditsNode.get("crew");
-            if (crewNode != null && crewNode.isArray()) {
+            // if (crewNode != null && crewNode.isArray()) {
 
-                List<MovieDto> movieDtoCrewList = new ArrayList<>();
-                List<MovieDto> crewImgList = new ArrayList<>();
-                for (JsonNode crew : crewNode) {
-                    MovieDto movieDtoCrew = new MovieDto();
-                    String crewName = crew.get("name").asText();
-                    String job = crew.get("job").asText();
-                    String department = crew.get("department").asText();
-                    String profilePath = crew.get("profile_path").isNull() ? null : crew.get("profile_path").asText();
+            //     List<MovieDto> movieDtoCrewList = new ArrayList<>();
+            //     List<MovieDto> crewImgList = new ArrayList<>();
+            //     for (JsonNode crew : crewNode) {
+            //         MovieDto movieDtoCrew = new MovieDto();
+            //         String crewName = crew.get("name").asText();
+            //         String job = crew.get("job").asText();
+            //         String department = crew.get("department").asText();
+            //         String profilePath = crew.get("profile_path").isNull() ? null : crew.get("profile_path").asText();
 
-                    // 스태프 정보 저장
-                    movieDtoCrew.setCrewEnNm(crewName);
-                    movieDtoCrew.setCrewRole(job);
-                    movieDtoCrew.setCrewDepartment(department);
+            //         // 스태프 정보 저장
+            //         movieDtoCrew.setCrewEnNm(crewName);
+            //         movieDtoCrew.setCrewRole(job);
+            //         movieDtoCrew.setCrewDepartment(department);
 
-                    // 프로필 이미지 다운로드 및 저장
-                    if (profilePath != null && !profilePath.isEmpty()) {
-                        String profileUrl = imageBaseUrl + profilePath;
-                        String fileExtension = CommonUtil.getExtension(profileUrl);
-                        String fileName = CommonUtil.generateFileName(fileExtension);
-                        String fPath = localFilePath + filePath + "/crew_profile";
-                        CommonUtil.fileDownloader(profileUrl, fPath, fileName);
+            //         // 프로필 이미지 다운로드 및 저장
+            //         if (profilePath != null && !profilePath.isEmpty()) {
+            //             String profileUrl = imageBaseUrl + profilePath;
+            //             String fileExtension = CommonUtil.getExtension(profileUrl);
+            //             String fileName = CommonUtil.generateFileName(fileExtension);
+            //             String fPath = localFilePath + filePath + "/crew_profile";
+            //             CommonUtil.fileDownloader(profileUrl, fPath, fileName);
                         
-                        movieDtoCrew.setFilePath(fPath + "/" + fileName);
-                        movieDtoCrew.setFileTypCd("006"); // crew profile 이미지 타입 코드
-                        int fileId = movieMapper.getFileId();
-                        System.out.println("434 : "+fileId);
-                        movieDtoCrew.setFileId(fileId);
-                        crewImgList.add(movieDtoCrew);
+            //             movieDtoCrew.setFilePath(fPath + "/" + fileName);
+            //             movieDtoCrew.setFileTypCd("006"); // crew profile 이미지 타입 코드
+            //             int fileId = movieMapper.getFileId();
+            //             System.out.println("434 : "+fileId);
+            //             movieDtoCrew.setFileId(fileId);
+            //             crewImgList.add(movieDtoCrew);
                         
-                    }
-                }
-
-                if(!movieDtoCrewList.isEmpty()){
-                    // 스태프 정보 저장
-                    movieMapper.insertCrewInfo(movieDtoCrewList);
-                    // 스태프 영화 관계 정보 저장
-                    movieMapper.insertCrewMovieInfo(movieDtoCrewList);
-                    // 스태프 프로필 이미지 저장
-                    movieService.insertFileInfo(crewImgList);
-                }
-            }
+            //         }
+            //     }
+            // }
+        if(crewNode != null && crewNode.isArray()){
+            // 스태프 정보 저장
+            movieService.insertCrewsInfo(movieDto.getMovieId(), crewNode);
+        }
 
         SpotifyDto spotifyDto = movieService.getMovieOst(movieDto.getMovieEnNm());
 
