@@ -77,3 +77,6 @@ ios/Pods/
 .vscode
 
 **/bin
+
+# files
+/volumes
