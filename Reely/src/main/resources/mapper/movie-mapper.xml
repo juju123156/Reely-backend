@@ -139,22 +139,22 @@
         INSERT INTO "cast" (
             cast_ko_nm,
             cast_en_nm,
-            file_id,
-            cast_etc,
+            gender,
             cast_birth,
             cast_death,
-            country_cd,
+            cast_nationality,
+            cast_filmography,
             frst_reg_date
         ) VALUES 
         <foreach collection="list" item="cast" separator=",">
             (
                 #{cast.castKoNm},
                 #{cast.castEnNm},
-                #{cast.fileId},
-                #{cast.castEtc},
+                #{cast.gender},
                 #{cast.castBirth},
                 #{cast.castDeath},
-                #{cast.countryCd},
+                #{cast.castNationality},
+                #{cast.castFilmography},
                 NOW()
             )
         </foreach>
@@ -185,18 +185,27 @@
     <!-- 스태프 정보 저장 -->
     <insert id="insertCrewInfo" parameterType="list">
         INSERT INTO crew (
+            crew_id,
             crew_ko_nm,
             crew_en_nm,
+            gender,
             crew_birth,
             crew_death,
+            crew_nationality,
+            crew_filmography,
+            crew_biography,
             frst_reg_date
         ) VALUES 
         <foreach collection="list" item="crew" separator=",">
-            (
+            (   #{crew.crewId},
                 #{crew.crewKoNm},
                 #{crew.crewEnNm},
+                #{crew.gender},
                 #{crew.crewBirth},
                 #{crew.crewDeath},
+                #{crew.crewNationality},
+                #{crew.crewFilmography},
+                #{crew.crewBiography},
                 NOW()
             )
         </foreach>
@@ -219,6 +228,21 @@
                 #{crew.crewDepartment},
                 #{crew.crewRole},
                 #{crew.crewDirectorYn},
+                NOW()
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertCrewImg" parameterType="list">
+        INSERT INTO crew_img (
+            crew_id,
+            cast_logo_file_id,
+            frst_reg_date
+        ) VALUES 
+        <foreach collection="list" item="crew" separator=",">
+            (
+                #{crew.crewId},
+                #{crew.castLogoFileId},
                 NOW()
             )
         </foreach>

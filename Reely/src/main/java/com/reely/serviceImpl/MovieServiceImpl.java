@@ -34,7 +34,6 @@ public class MovieServiceImpl implements MovieService {
     private final SpotifyFeignClient spotifyClient;
     // tmdb 이미지 url
     private static final String imageBaseUrl = "https://image.tmdb.org/t/p/original";
-    private final MovieService movieService;
     private final MovieMapper movieMapper;
 
     String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
@@ -43,8 +42,7 @@ public class MovieServiceImpl implements MovieService {
     String spotifyClientId = "5b2c9e587cf74849aa331f4c8cf79a9f";
     String spotifyClientSecret = "4ccb21a2472048c69fe4741655125741";
 
-    public MovieServiceImpl(MovieService movieService, MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient, SpotifyFeignClient spotifyClient) {
-        this.movieService = movieService;
+    public MovieServiceImpl(MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient, SpotifyFeignClient spotifyClient) {
         this.movieMapper = movieMapper;
         this.kobisFeignClient = kobisFeignClient;
         this.kmdbFeignClient = kmdbFeignClient;
@@ -288,7 +286,7 @@ public class MovieServiceImpl implements MovieService {
     
             if (!crewImgList.isEmpty()) {
                 // 스태프 프로필 이미지 저장
-                movieService.insertFileInfo(crewImgList);
+                this.insertFileInfo(crewImgList);
                 // 스태프 프로필 이미지 저장
                 movieMapper.insertCrewImg(crewImgList);
             }
