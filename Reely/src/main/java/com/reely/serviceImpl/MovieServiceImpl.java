@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,6 +35,7 @@ public class MovieServiceImpl implements MovieService {
     private final SpotifyFeignClient spotifyClient;
     // tmdb 이미지 url
     private static final String imageBaseUrl = "https://image.tmdb.org/t/p/original";
+
     private final MovieMapper movieMapper;
 
     String kobisKey = "9eaf43c6cd0bde9c0862c1c2c1e4b434"; 
@@ -42,6 +44,7 @@ public class MovieServiceImpl implements MovieService {
     String spotifyClientId = "5b2c9e587cf74849aa331f4c8cf79a9f";
     String spotifyClientSecret = "4ccb21a2472048c69fe4741655125741";
 
+    @Autowired
     public MovieServiceImpl(MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient, SpotifyFeignClient spotifyClient) {
         this.movieMapper = movieMapper;
         this.kobisFeignClient = kobisFeignClient;
@@ -117,11 +120,6 @@ public class MovieServiceImpl implements MovieService {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode root = objectMapper.readTree(response.getBody());
         return root.get("access_token").asText();
-    }
-    @Transactional
-    @Override
-    public int insertFileInfo(List<MovieDto>  movieDto) {
-        return movieMapper.insertFileInfo(movieDto);
     }
 
     @Override
@@ -286,7 +284,7 @@ public class MovieServiceImpl implements MovieService {
     
             if (!crewImgList.isEmpty()) {
                 // 스태프 프로필 이미지 저장
-                this.insertFileInfo(crewImgList);
+                movieMapper.insertFileInfo(crewImgList);
                 // 스태프 프로필 이미지 저장
                 movieMapper.insertCrewImg(crewImgList);
             }
