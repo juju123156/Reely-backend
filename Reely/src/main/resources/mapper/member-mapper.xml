@@ -5,7 +5,7 @@
     <select id="findAll" resultType="Member">
         select * from member
     </select>
-    <insert id="insertMember" parameterType="Member">
+    <insert id="insertMember" parameterType="com.reely.dto.MemberDto">
         insert into member
             (
              member_id
@@ -34,14 +34,14 @@
             )
     </insert>
 
-    <select id="findMemberByMemberId" parameterType="Member" resultType="Boolean">
+    <select id="findMemberByMemberId" parameterType="com.reely.dto.MemberDto" resultType="Boolean">
         select count(member_id)
           from member
          where member_id = #{memberId}
            and del_yn != 'Y'
     </select>
 
-    <select id="findMemberInfo" parameterType="Member" resultType="Member">
+    <select id="findMemberInfo" parameterType="String" resultType="Member">
         select
                member_pk AS memberPk
              , member_id AS memberId

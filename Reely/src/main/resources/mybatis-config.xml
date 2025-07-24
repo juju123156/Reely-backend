@@ -2,13 +2,18 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-        <settings>
+    <settings>
         <!-- MyBatis의 캐시 기능 비활성화 -->
-            <setting name="cacheEnabled" value="false"/>
-        </settings>
+        <setting name="cacheEnabled" value="false"/>
+    </settings>
     <typeAliases>
         <typeAlias type="com.reely.dto.MemberDto" alias="member"></typeAlias>
         <typeAlias type="com.reely.dto.SettingDto" alias="setting"></typeAlias>
         <typeAlias type="com.reely.dto.MovieDto" alias="movie"></typeAlias>
     </typeAliases>
+    <mappers>
+        <mapper resource="mapper/member-mapper.xml"/>
+        <mapper resource="mapper/movie-mapper.xml"/>
+        <mapper resource="mapper/setting-mapper.xml"/>
+    </mappers>
 </configuration>

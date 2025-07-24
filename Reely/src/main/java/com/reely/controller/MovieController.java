@@ -230,7 +230,7 @@ public class MovieController {
                                .movieWarchGrd(grade)
                                .movieOpenDt(kmdbDto.getRepRlsDate() != null ? kmdbDto.getRepRlsDate(): "")
                                .moviePlot(plotText)
-                               .movieAwards(awards)
+                               .movieAwards(String.join(",", awards))
                                .showTypeCd(kmdbDto.getUse() != null ? kmdbDto.getUse(): "")
                                .prdtStat(kobisDto.getPrdtStatNm() != null ? kobisDto.getPrdtStatNm(): "")
                                .showTypes(kobisDto.getTypeNm() != null ? kobisDto.getTypeNm(): "")

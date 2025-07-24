@@ -57,7 +57,7 @@ public class MovieDto {
     private String movieLanguage;
 
     // 수상 정보
-    private List<String> movieAwards;
+    private String movieAwards;
 
     // 상영 유형 코드
     private String showTypeCd;

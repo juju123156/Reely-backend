@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.reely.mapper.MovieMapper">
-    <insert id="insertMovieInfo" parameterType="MovieDto">
+    <insert id="insertMovieInfo" parameterType="com.reely.dto.MovieDto">
         INSERT INTO movie (
             movie_id,
             movie_ko_nm,
@@ -45,7 +45,7 @@
             NOW()
         )
     </insert>
-    <insert id="insertCountryInfo" parameterType="Movie">
+    <insert id="insertCountryInfo" parameterType="com.reely.dto.MovieDto">
         insert into movie_country
             (
              country_cd,
@@ -58,7 +58,7 @@
             )
     </insert>
 
-    <insert id="insertProductionInfo" parameterType="list">
+    <insert id="insertProductionInfo" parameterType="java.util.List">
         insert into production
             (
              production_id,
@@ -81,7 +81,7 @@
         </foreach>
     </insert>
 
-    <insert id="insertMovieProductionInfo" parameterType="list">
+    <insert id="insertMovieProductionInfo" parameterType="java.util.List">
         insert into movie_production
             (
              production_id,
@@ -98,7 +98,7 @@
         </foreach>
     </insert>
 
-    <insert id="insertFileInfo" parameterType="list">
+    <insert id="insertFileInfo" parameterType="java.util.List">
         insert into file
             (
              file_id,
@@ -119,7 +119,7 @@
         </foreach>
     </insert>
 
-    <insert id="insertCastImg" parameterType="list">
+    <insert id="insertCastImg" parameterType="java.util.List">
         INSERT INTO cast_img (
             cast_id,
             cast_logo_file_id,
@@ -135,7 +135,7 @@
     </insert>
 
     <!-- 배우 정보 저장 -->
-    <insert id="insertCastInfo" parameterType="list">
+    <insert id="insertCastInfo" parameterType="java.util.List">
         INSERT INTO "cast" (
             cast_ko_nm,
             cast_en_nm,
@@ -161,7 +161,7 @@
     </insert>
     
     <!-- 배우-영화 관계 저장 -->
-    <insert id="insertCastMovieInfo" parameterType="list">
+    <insert id="insertCastMovieInfo" parameterType="java.util.List">
         INSERT INTO movie_cast (
             cast_id,
             movie_id,
@@ -183,7 +183,7 @@
     </insert>
     
     <!-- 스태프 정보 저장 -->
-    <insert id="insertCrewInfo" parameterType="list">
+    <insert id="insertCrewInfo" parameterType="java.util.List">
         INSERT INTO crew (
             crew_id,
             crew_ko_nm,
@@ -212,7 +212,7 @@
     </insert>
     
     <!-- 스태프-영화 관계 저장 -->
-    <insert id="insertCrewMovieInfo" parameterType="list">
+    <insert id="insertCrewMovieInfo" parameterType="java.util.List">
         INSERT INTO movie_crew (
             crew_id,
             movie_id,
@@ -233,7 +233,7 @@
         </foreach>
     </insert>
 
-    <insert id="insertCrewImg" parameterType="list">
+    <insert id="insertCrewImg" parameterType="java.util.List">
         INSERT INTO crew_img (
             crew_id,
             cast_logo_file_id,
@@ -276,7 +276,7 @@
         SELECT nextval('album_id_seq') AS "albumId"
     </select>
 
-    <insert id="insertSoundtrackImg" parameterType="list">
+    <insert id="insertSoundtrackImg" parameterType="java.util.List">
         INSERT INTO soundTrack_img (
             soundtrack_id,
             album_file_id,
@@ -291,7 +291,7 @@
         </foreach>
     </insert>
 
-    <insert id="insertSoundtrackInfo" parameterType="list">
+    <insert id="insertSoundtrackInfo" parameterType="java.util.List">
         INSERT INTO soundTrack (
             movie_id,
             album_id,
