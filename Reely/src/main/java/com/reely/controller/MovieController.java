@@ -89,6 +89,7 @@ public class MovieController {
 
     @GetMapping(value = "/getMovieInfo/{movieNm}" , produces = "application/json")
     public MovieDto getMovieInfo(@PathVariable("movieNm") String movieNm) {
+        System.out.println("===========================kobis json==========================="+movieNm);
         ObjectMapper objectMapper = new ObjectMapper();
         KobisDto kobisDto = new KobisDto();
         KmdbDto kmdbDto = new KmdbDto();
@@ -136,10 +137,10 @@ public class MovieController {
                 }
             // 없으면 null 리턴
             }
-            //System.out.println("===========================kmdb json==========================="+kmdbList.get(2));
+            System.out.println("===========================kmdb json==========================="+kmdbList.get(2));
             List<HashMap<String, String>> directors = new ArrayList<>();
             
-            if (kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
+            if (kmdbDto != null && kmdbDto.getDirectors() != null && kmdbDto.getDirectors().getDirector() != null) {
                 directors = kmdbDto.getDirectors().getDirector().stream()
                     .map(d -> {
                         HashMap<String, String> map = new HashMap<>();
@@ -380,14 +381,14 @@ public class MovieController {
                     isFile = true;
 
                     String tmImgUrl = imageBaseUrl + pd.getLogoPath();
-                    String fileExtension = CommonUtil.getExtension(tmImgUrl);
-                    String fileName = CommonUtil.generateFileName(fileExtension);
+                String fileExtension = CommonUtil.getExtension(tmImgUrl);
+                String fileName = CommonUtil.generateFileName(fileExtension);
                     String fPath = localFilePath + filePath + "/logo"; 
-                    CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
+                CommonUtil.fileDownloader(tmImgUrl, fPath, fileName);
                     movieDtoComp.setMovieId(movieDto.getMovieId());
                     movieDtoComp.setFilePath(fPath + "/" + fileName);
                     movieDtoComp.setFileTypCd("004");
-                    int fileId = movieMapper.getFileId();
+                int fileId = movieMapper.getFileId();
                     int productionId = movieMapper.getProductionId();
                     movieDtoComp.setProductionId(productionId);
                     movieDtoComp.setProductionLogoFileId(fileId);
@@ -414,7 +415,7 @@ public class MovieController {
             String tmJsonCredits = tmdbMovieClient.getMovieCredits(tmMovieId, "Bearer " + tmdbKey, "en-US");
             JsonNode creditsNode = objectMapper.readTree(tmJsonCredits);
             JsonNode castNode = creditsNode.get("cast");
-
+            
             if (castNode != null && castNode.isArray()) {
                 List<MovieDto> movieDtoCastList = new ArrayList<>();
                 List<MovieDto> movieDtoCastImgList = new ArrayList<>();
@@ -620,7 +621,7 @@ public class MovieController {
             }
 
         }
-            
+
         } catch(Exception e) {
             e.printStackTrace();  
         }

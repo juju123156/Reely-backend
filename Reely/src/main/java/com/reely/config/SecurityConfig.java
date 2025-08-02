@@ -72,24 +72,50 @@ public class SecurityConfig {
         return source;
     }
 
+    // @Bean
+    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    //     http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+    //     http.csrf((auth) -> auth.disable());
+    //     http.formLogin((auth) -> auth.disable());
+    //     http.httpBasic((auth) -> auth.disable());
+    //     http.authorizeHttpRequests((auth) -> auth
+    //                     .requestMatchers("/api/auth/**").permitAll()
+    //                     .requestMatchers("/api/member/join", "/api/member/duplicate-id").permitAll()
+    //                     .requestMatchers("/api/**").permitAll()
+    //                     .anyRequest().authenticated());
+
+    //     http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+    //     http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), this.jwtUtil, failureHandler, authService), UsernamePasswordAuthenticationFilter.class);
+    //     http.sessionManagement((session) -> session
+    //             .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+    //     return http.build();
+    // }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        http.csrf((auth) -> auth.disable());
-        http.formLogin((auth) -> auth.disable());
-        http.httpBasic((auth) -> auth.disable());
-        http.authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/member/join", "/api/member/duplicate-id").permitAll()
-                        //.requestMatchers("/setting/**").permitAll()
-                        .anyRequest().authenticated());
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+    http.csrf((auth) -> auth.disable());
+    http.formLogin((auth) -> auth.disable());
+    http.httpBasic((auth) -> auth.disable());
+    http.authorizeHttpRequests((auth) -> auth
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/member/join", "/api/member/duplicate-id").permitAll()
+                    .requestMatchers("/api/**").permitAll()
+                    .anyRequest().authenticated());
 
-        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
-        http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), this.jwtUtil, failureHandler, authService), UsernamePasswordAuthenticationFilter.class);
-        http.sessionManagement((session) -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+    
+    // LoginFilter를 특정 URL에만 적용
+    LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), this.jwtUtil, failureHandler, authService);
+    loginFilter.setFilterProcessesUrl("/api/auth/login"); // 로그인 URL 지정
+    
+    http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+    
+    http.sessionManagement((session) -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        return http.build();
+    return http.build();
     }
 
 }

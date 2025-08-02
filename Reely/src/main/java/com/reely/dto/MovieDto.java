@@ -63,7 +63,7 @@ public class MovieDto {
     private String showTypeCd;
 
     // 영화 유형 코드
-    private String movieTypeCd;
+    private String movieType;
 
     // 배우 ID
     private int castId;

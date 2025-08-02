@@ -29,7 +29,7 @@
             #{movieEnNm},
             #{moviePrDt},
             #{movieRuntime},
-            #{movieOpenDt},
+            CAST(#{movieOpenDt} AS DATE),
             #{moviePlot},
             #{movieAudienceCnt},
             #{movieLanguage},
