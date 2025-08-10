@@ -154,7 +154,14 @@
                 #{cast.castBirth},
                 #{cast.castDeath},
                 #{cast.castNationality},
-                #{cast.castFilmography},
+                <choose>
+                    <when test="cast.castFilmography != null and cast.castFilmography.size() > 0">
+                        #{cast.castFilmographyStr, jdbcType=VARCHAR},
+                    </when>
+                    <otherwise>
+                        NULL,
+                    </otherwise>
+                </choose>
                 NOW()
             )
         </foreach>
@@ -293,6 +300,7 @@
 
     <insert id="insertSoundtrackInfo" parameterType="java.util.List">
         INSERT INTO soundTrack (
+            soundtrack_id,
             movie_id,
             album_id,
             album_nm,
@@ -303,6 +311,7 @@
         ) VALUES 
         <foreach collection="list" item="track" separator=",">
             (
+                #{track.soundtrackId},
                 #{track.movieId},
                 #{track.albumId},
                 #{track.albumNm},

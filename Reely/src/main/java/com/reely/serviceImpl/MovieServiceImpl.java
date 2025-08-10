@@ -164,12 +164,11 @@ public class MovieServiceImpl implements MovieService {
                     crewDto.setCrewEnNm(crewNodeDetail.get("name").asText());
                     
                     // 생년월일, 사망일 정보 추가
-                    if (crewNodeDetail.has("birthday") && !crewNodeDetail.get("birthday").isNull()) {
-                        crewDto.setCrewBirth(crewNode.get("birthday").asText());
-                    }
-                    if (crewNodeDetail.has("deathday") && !crewNodeDetail.get("deathday").isNull()) {
-                        crewDto.setCrewDeath(crewNode.get("deathday").asText());
-                    }
+                    String birth = crewNodeDetail.path("birthday").asText(null);
+                    crewDto.setCrewBirth(birth);
+                    
+                    String death = crewNodeDetail.path("deathday").asText(null);
+                    crewDto.setCrewDeath(death);
 
                     // 성별 정보 추가
                     if (crewNodeDetail.has("gender")) {
@@ -256,8 +255,8 @@ public class MovieServiceImpl implements MovieService {
                     }
     
                     // 프로필 이미지 처리
-                    if (crewNode.has("profile_path") && !crewNode.get("profile_path").isNull()) {
-                        String profilePath = crewNode.get("profile_path").asText();
+                    if (crew.has("profile_path") && !crew.get("profile_path").isNull()) {
+                        String profilePath = crew.get("profile_path").asText();
                         String profileUrl = imageBaseUrl + profilePath;
                         String fileExtension = CommonUtil.getExtension(profileUrl);
                         String fileName = CommonUtil.generateFileName(fileExtension);
@@ -293,5 +292,11 @@ public class MovieServiceImpl implements MovieService {
             e.printStackTrace();
         }
         
+    }
+
+    @Override
+    public int insertFileInfo(List<MovieDto> movieDto) {
+
+        return movieMapper.insertFileInfo(movieDto);
     }
 }

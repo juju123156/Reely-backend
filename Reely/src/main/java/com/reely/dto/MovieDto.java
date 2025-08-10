@@ -97,7 +97,10 @@ public class MovieDto {
 
     // 배우 필모그래피(출연작)
     private List<String> castFilmography;
-
+    public String getCastFilmographyStr() {
+        return (castFilmography == null || castFilmography.isEmpty())
+               ? null : String.join(",", castFilmography);
+    }
     // 배우 로코 이미지 ID
     private int castLogoFileId;
 
@@ -130,6 +133,15 @@ public class MovieDto {
 
     // 스텝 별세일
     private String crewDeath;
+
+    // 스텝 국적
+    private String  crewNationality;
+
+    // 스텝 필모
+    private String crewFilmography;
+
+    // 스텝 바이오
+    private String  crewBiography; 
 
     // 감독 여부 (Y/N)
     private String directorYn;
@@ -177,7 +189,7 @@ public class MovieDto {
     private int movieSearchId;
 
     // 사운드트랙 ID
-    private int soundTrackId;
+    private int soundtrackId;
 
 
     /* Kobis */
@@ -302,9 +314,6 @@ public class MovieDto {
     private String productionCountry;
 
     private int productionLogoFileId;
-
-    /* soundTrack */
-    private int soundtrackId;
 
     private int albumId;
 
