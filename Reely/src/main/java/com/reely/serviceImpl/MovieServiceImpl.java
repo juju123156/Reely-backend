@@ -1,14 +1,22 @@
 package com.reely.serviceImpl;
 
+import java.net.URI;
+import java.net.http.HttpResponse;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reely.common.util.CommonUtil;
 import com.reely.dto.MovieDto;
+import com.reely.dto.MovieWithScore;
 import com.reely.dto.SpotifyDto;
 import com.reely.dto.SpotifyDto.SpotifyAlbumTracksDto;
 import com.reely.mapper.MovieMapper;
@@ -44,6 +53,11 @@ public class MovieServiceImpl implements MovieService {
     String spotifyClientId = "5b2c9e587cf74849aa331f4c8cf79a9f";
     String spotifyClientSecret = "4ccb21a2472048c69fe4741655125741";
 
+    private final String supabaseUrl = "https://fqzixbfbzsnqolkhysiy.supabase.co";
+    private final String supabaseApiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxeml4YmZienNucW9sa2h5c2l5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA1NjkzNTMsImV4cCI6MjA0NjE0NTM1M30.S1EE_tIn8lhPTxuZJ1gd_VJHQ54BG_hNp0YG4mUktBA";
+    private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
+
     @Autowired
     public MovieServiceImpl(MovieMapper movieMapper, KobisMovieFeignClient kobisFeignClient, KmdbMovieFeignClient kmdbFeignClient, TmdbMovieFeignClient tmdbFeignClient, SpotifyFeignClient spotifyClient) {
         this.movieMapper = movieMapper;
@@ -51,6 +65,8 @@ public class MovieServiceImpl implements MovieService {
         this.kmdbFeignClient = kmdbFeignClient;
         this.tmdbMovieClient = tmdbFeignClient;
         this.spotifyClient = spotifyClient;
+        this.httpClient = HttpClient.newHttpClient();
+        this.objectMapper = new ObjectMapper();
     }
 
     String localFilePath = System.getProperty("user.dir"); // 현재 작업 디렉토리
@@ -299,4 +315,158 @@ public class MovieServiceImpl implements MovieService {
 
         return movieMapper.insertFileInfo(movieDto);
     }
+
+        /**
+     * 방법 1: ILIKE를 사용한 부분 문자열 검색 (PostgreSQL)
+     * 가장 간단하고 효과적인 방법
+     */
+    public List<MovieDto> searchMoviesByTitle(String searchTerm) throws Exception {
+        String encodedSearch = java.net.URLEncoder.encode("%" + searchTerm + "%", "UTF-8");
+        String url = String.format("%s/rest/v1/movies?movie_ko_nm=ilike.%s", 
+                                 supabaseUrl, encodedSearch);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("apikey", supabaseApiKey)
+                .header("Authorization", "Bearer " + supabaseApiKey)
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+        
+        HttpResponse<String> response = httpClient.send(request, 
+                                                       HttpResponse.BodyHandlers.ofString());
+        
+        return parseMoviesFromJson(response.body());
+    }
+    
+    /**
+     * 방법 2: PostgreSQL의 Full Text Search 사용
+     * 더 정교한 검색을 원할 때 사용
+     */
+    public List<MovieDto> searchMoviesFullText(String searchTerm) throws Exception {
+        String url = String.format("%s/rest/v1/rpc/search_movies", supabaseUrl);
+        
+        Map<String, String> requestBody = Map.of("search_term", searchTerm);
+        String jsonBody = objectMapper.writeValueAsString(requestBody);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("apikey", supabaseApiKey)
+                .header("Authorization", "Bearer " + supabaseApiKey)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+        
+        HttpResponse<String> response = httpClient.send(request, 
+                                                       HttpResponse.BodyHandlers.ofString());
+        
+        return parseMoviesFromJson(response.body());
+    }
+    
+    /**
+     * 방법 3: 여러 조건을 조합한 유연한 검색
+     * 한글명, 영문명 등 여러 필드에서 검색
+     */
+    public List<MovieDto> searchMoviesFlexible(String searchTerm) throws Exception {
+        String encodedSearch = java.net.URLEncoder.encode("%" + searchTerm + "%", "UTF-8");
+        String url = String.format(
+            "%s/rest/v1/movies?or=(movie_ko_nm.ilike.%s,movie_en_nm.ilike.%s)", 
+            supabaseUrl, encodedSearch, encodedSearch);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("apikey", supabaseApiKey)
+                .header("Authorization", "Bearer " + supabaseApiKey)
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+        
+        HttpResponse<String> response = httpClient.send(request, 
+                                                       HttpResponse.BodyHandlers.ofString());
+        
+        return parseMoviesFromJson(response.body());
+    }
+    
+    /**
+     * 방법 4: 클라이언트 사이드에서 추가 필터링
+     * DB에서 가져온 후 Java에서 유사도 검사
+     */
+    public List<MovieDto> searchMoviesWithSimilarity(String searchTerm, double threshold) throws Exception {
+        // 먼저 넓은 범위로 검색
+        List<MovieDto> candidates = searchMoviesFlexible(searchTerm);
+        
+        // 유사도 기반으로 필터링 및 정렬
+        return candidates.stream()
+                .map(movie -> new MovieWithScore(movie, calculateSimilarity(movie.getMovieKoNm(), searchTerm)))
+                .filter(movieWithScore -> movieWithScore.getScore() >= threshold)
+                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
+                .map(MovieWithScore::getMovie)
+                .toList();
+    }
+    
+    // JSON 응답을 Movie 객체 리스트로 변환
+    private List<MovieDto> parseMoviesFromJson(String json) throws Exception {
+        JsonNode jsonNode = objectMapper.readTree(json);
+        List<MovieDto> movies = new ArrayList<>();
+        
+        for (JsonNode node : jsonNode) {
+            MovieDto movie = new MovieDto();
+            if (node.has("movie_id") && !node.get("movie_id").isNull()) {
+                movie.setMovieId(node.get("movie_id").asInt()); // asInt() 사용
+            }
+            movie.setMovieKoNm(node.has("movie_ko_nm") && !node.get("movie_ko_nm").isNull() ? 
+                              node.get("movie_ko_nm").asText() : null);
+            movie.setMovieEnNm(node.has("movie_en_nm") && !node.get("movie_en_nm").isNull() ? 
+                              node.get("movie_en_nm").asText() : null);
+            
+            // release_year 처리 (DATE 또는 INTEGER 모두 처리)
+            if (node.has("movie_open_dt") && !node.get("movie_open_dt").isNull()) {
+                JsonNode yearNode = node.get("movie_open_dt");
+                    movie.setMovieOpenDt(yearNode.asText());
+                
+            }
+            
+            movies.add(movie);
+        }
+        
+        return movies;
+    }
+    
+    // 간단한 문자열 유사도 계산 (Levenshtein 거리 기반)
+    private double calculateSimilarity(String s1, String s2) {
+        if (s1 == null || s2 == null) return 0.0;
+        
+        s1 = s1.toLowerCase().trim();
+        s2 = s2.toLowerCase().trim();
+        
+        if (s1.equals(s2)) return 1.0;
+        if (s1.contains(s2) || s2.contains(s1)) return 0.8;
+        
+        int distance = levenshteinDistance(s1, s2);
+        int maxLength = Math.max(s1.length(), s2.length());
+        
+        return 1.0 - (double) distance / maxLength;
+    }
+    
+    private int levenshteinDistance(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+        
+        for (int i = 0; i <= s1.length(); i++) {
+            for (int j = 0; j <= s2.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else {
+                    dp[i][j] = Math.min(
+                        Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1),
+                        dp[i - 1][j - 1] + (s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1)
+                    );
+                }
+            }
+        }
+        
+        return dp[s1.length()][s2.length()];
+    }
+
 }
