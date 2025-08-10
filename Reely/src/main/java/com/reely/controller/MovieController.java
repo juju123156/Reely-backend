@@ -1060,4 +1060,26 @@ public class MovieController {
         return spotifyDto;
     }
 
+    // try {
+    //     MovieSearchService searchService = new MovieSearchService(
+    //         "https://your-project.supabase.co",
+    //         "your-supabase-anon-key"
+    //     );
+        
+    //     // 기본 검색
+    //     List<Movie> results1 = searchService.searchMoviesByTitle("어벤져");
+    //     System.out.println("기본 검색 결과: " + results1);
+        
+    //     // 유연한 검색 (여러 필드)
+    //     List<Movie> results2 = searchService.searchMoviesFlexible("spider");
+    //     System.out.println("유연한 검색 결과: " + results2);
+        
+    //     // 유사도 기반 검색
+    //     List<Movie> results3 = searchService.searchMoviesWithSimilarity("아이언맨", 0.6);
+    //     System.out.println("유사도 검색 결과: " + results3);
+        
+    // } catch (Exception e) {
+    //     e.printStackTrace();
+    // }
+
 }
