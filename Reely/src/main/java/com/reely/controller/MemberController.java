@@ -3,6 +3,7 @@ package com.reely.controller;
 import com.reely.dto.MemberDto;
 import com.reely.security.CustomUserDetails;
 import com.reely.service.MemberService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class MemberController {
     }
 
     @PostMapping("/join")
-    public ResponseEntity<Integer> join(@RequestBody MemberDto memberDto) {
+    public ResponseEntity<Integer> join(@Valid @RequestBody MemberDto memberDto) {
         Integer result = memberService.insertMember(memberDto);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

@@ -10,6 +10,7 @@ import com.reely.service.AuthService;
 import com.reely.service.EmailAuthService;
 import jakarta.servlet.http.Cookie;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -86,13 +87,13 @@ public class AuthController {
     }
 
     @PostMapping("/email/send")
-    public ResponseEntity<String> sendAuthCode(@RequestBody EmailDto emailDto) {
+    public ResponseEntity<String> sendAuthCode(@Valid @RequestBody EmailDto emailDto) {
         emailAuthService.sendAuthCode(emailDto);
         return ResponseEntity.ok("인증번호를 이메일로 발송했습니다.");
     }
 
     @PostMapping("/email/verify")
-    public ResponseEntity<String> verifyAuthCode(@RequestBody EmailDto emailDto) {
+    public ResponseEntity<String> verifyAuthCode(@Valid @RequestBody EmailDto emailDto) {
         boolean result = emailAuthService.verifyAuthCode(emailDto);
         if (result) {
             return ResponseEntity.ok("인증에 성공했습니다.");
