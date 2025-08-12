@@ -32,9 +32,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        log.info("jwtFilter={}", request);
         String authorization = request.getHeader("Authorization");
-        log.info(authorization);
 
         // Authorization 헤더가 없거나 "Bearer "로 시작하지 않으면 넘어가기
         if (ObjectUtils.isEmpty(authorization) || !authorization.startsWith("Bearer ")) {

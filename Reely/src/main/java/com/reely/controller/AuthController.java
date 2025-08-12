@@ -1,11 +1,13 @@
 package com.reely.controller;
 
+import com.reely.dto.EmailDto;
 import com.reely.dto.TokenDto;
 import com.reely.exception.CustomException;
 import com.reely.exception.ErrorCode;
 import com.reely.security.JWTUtil;
 import com.reely.security.TokenConstants;
 import com.reely.service.AuthService;
+import com.reely.service.EmailAuthService;
 import jakarta.servlet.http.Cookie;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 
-
 @Controller
 @Slf4j
 @RequestMapping("/api/auth")
@@ -26,9 +27,12 @@ public class AuthController {
 
     private final AuthService authService;
 
-    public AuthController(JWTUtil jwtUtil, AuthService authService) {
+    private final EmailAuthService emailAuthService;
+
+    public AuthController(JWTUtil jwtUtil, AuthService authService, EmailAuthService emailAuthService) {
         this.jwtUtil = jwtUtil;
         this.authService = authService;
+        this.emailAuthService = emailAuthService;
     }
 
     @PostMapping("/reissue")
@@ -79,5 +83,21 @@ public class AuthController {
         cookie.setHttpOnly(true);
 
         return cookie;
+    }
+
+    @PostMapping("/email/send")
+    public ResponseEntity<String> sendAuthCode(@RequestBody EmailDto emailDto) {
+        emailAuthService.sendAuthCode(emailDto);
+        return ResponseEntity.ok("인증번호를 이메일로 발송했습니다.");
+    }
+
+    @PostMapping("/email/verify")
+    public ResponseEntity<String> verifyAuthCode(@RequestBody EmailDto emailDto) {
+        boolean result = emailAuthService.verifyAuthCode(emailDto);
+        if (result) {
+            return ResponseEntity.ok("인증에 성공했습니다.");
+        } else {
+            return ResponseEntity.badRequest().body("인증번호가 일치하지 않거나 만료되었습니다.");
+        }
     }
 }
