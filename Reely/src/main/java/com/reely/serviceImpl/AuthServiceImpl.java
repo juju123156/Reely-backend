@@ -12,8 +12,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    public AuthServiceImpl(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     public Boolean isExistRefreshToken(String username) {
@@ -30,5 +33,21 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void deleteRefreshToken(String username) {
         redisTemplate.delete(username);
+    }
+
+    @Override
+    public void saveEmailAuthCode(String email, String authCode, long expiredSeconds) {
+        log.info("이메일 인증코드 저장");
+        redisTemplate.opsForValue().set(email, authCode, expiredSeconds, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public String getEmailAuthCode(String email) {
+        return redisTemplate.opsForValue().get(email);
+    }
+
+    @Override
+    public void deleteEmailAuthCode(String email) {
+        redisTemplate.delete(email);
     }
 }
