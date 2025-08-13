@@ -1,9 +1,12 @@
 package com.reely.serviceImpl;
 
 import com.reely.dto.EmailDto;
+import com.reely.exception.CustomException;
+import com.reely.exception.ErrorCode;
 import com.reely.service.AuthService;
 import com.reely.service.EmailAuthService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -25,15 +28,20 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     public void sendAuthCode(EmailDto emailDto) {
         String code = generateCode();
 
-        // Redis에 저장
-        authService.saveEmailAuthCode(emailDto.getEmail(), code, EXPIRE_SECONDS);
+        try {
+            // todo 전송 메시지 html 적용하기
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(emailDto.getEmail());
+            message.setSubject("이메일 인증번호");
+            message.setText("인증번호는 " + code + " 입니다. 5분 이내에 사용하세요.");
+            javaMailSender.send(message);
 
-        // 이메일 발송
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(emailDto.getEmail());
-        message.setSubject("이메일 인증번호");
-        message.setText("인증번호는 " + code + " 입니다. 5분 이내에 사용하세요.");
-        javaMailSender.send(message);
+            // Redis에 저장
+            authService.saveEmailAuthCode(emailDto.getEmail(), code, EXPIRE_SECONDS);
+
+        } catch (MailException e) {
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "메일 전송에 실패했습니다.");
+        }
     }
 
     @Override
