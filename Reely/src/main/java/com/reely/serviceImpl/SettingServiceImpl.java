@@ -10,8 +10,8 @@ import com.reely.dto.SettingDto;
 import com.reely.mapper.SettingMapper;
 import com.reely.service.SettingService;
 
-@Transactional
 @Service
+@Transactional
 public class SettingServiceImpl implements SettingService {
 
     private final SettingMapper settingMapper;

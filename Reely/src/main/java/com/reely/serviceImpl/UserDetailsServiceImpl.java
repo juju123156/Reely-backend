@@ -4,6 +4,9 @@ import com.reely.dto.MemberDto;
 import com.reely.exception.CustomException;
 import com.reely.exception.ErrorCode;
 import com.reely.security.CustomUserDetails;
+
+import jakarta.transaction.Transactional;
+
 import com.reely.mapper.MemberMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 
 @Service
 @Slf4j
+@Transactional
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final MemberMapper memberMapper;
