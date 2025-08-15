@@ -323,4 +323,23 @@
         </foreach>
     </insert>
 
+    <select id="searchMoviesFlexible" parameterType="map" resultType="com.reely.dto.MovieDto">
+        SELECT 
+            movie_id, 
+            movie_ko_nm, 
+            movie_en_nm, 
+            movie_open_dt
+        FROM movie
+        WHERE 
+            -- 원문 한글/영문명 검색
+            movie_ko_nm LIKE CONCAT('%', #{term}, '%')
+            OR movie_en_nm LIKE CONCAT('%', #{term}, '%')
+            -- 초성 검색 (예: ㄷㅇㅁㄱ)
+            OR movie_ko_nm_initials LIKE CONCAT('%', #{termInitials}, '%')
+            -- 자모 검색 (예: ㄷ ㅐ ㅎ ㅏ ㄴ ㅁ ㅣ ㄴ ㄱ ㅡ ㄱ)
+            OR movie_ko_nm_jamo LIKE CONCAT('%', #{termJamo}, '%')
+        ORDER BY movie_open_dt DESC
+        LIMIT 200
+    </select>
+
 </mapper>

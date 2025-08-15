@@ -52,4 +52,5 @@
         where member_id = #{memberId}
           and del_yn != 'Y'
     </select>
+    
 </mapper>

@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -315,83 +316,35 @@ public class MovieServiceImpl implements MovieService {
 
         return movieMapper.insertFileInfo(movieDto);
     }
-
-        /**
-     * 방법 1: ILIKE를 사용한 부분 문자열 검색 (PostgreSQL)
-     * 가장 간단하고 효과적인 방법
-     */
-    public List<MovieDto> searchMoviesByTitle(String searchTerm) throws Exception {
-        String encodedSearch = java.net.URLEncoder.encode("%" + searchTerm + "%", "UTF-8");
-        String url = String.format("%s/rest/v1/movies?movie_ko_nm=ilike.%s", 
-                                 supabaseUrl, encodedSearch);
-        
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("apikey", supabaseApiKey)
-                .header("Authorization", "Bearer " + supabaseApiKey)
-                .header("Content-Type", "application/json")
-                .GET()
-                .build();
-        
-        HttpResponse<String> response = httpClient.send(request, 
-                                                       HttpResponse.BodyHandlers.ofString());
-        
-        return parseMoviesFromJson(response.body());
-    }
-    
-    /**
-     * 방법 2: PostgreSQL의 Full Text Search 사용
-     * 더 정교한 검색을 원할 때 사용
-     */
-    public List<MovieDto> searchMoviesFullText(String searchTerm) throws Exception {
-        String url = String.format("%s/rest/v1/rpc/search_movies", supabaseUrl);
-        
-        Map<String, String> requestBody = Map.of("search_term", searchTerm);
-        String jsonBody = objectMapper.writeValueAsString(requestBody);
-        
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("apikey", supabaseApiKey)
-                .header("Authorization", "Bearer " + supabaseApiKey)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                .build();
-        
-        HttpResponse<String> response = httpClient.send(request, 
-                                                       HttpResponse.BodyHandlers.ofString());
-        
-        return parseMoviesFromJson(response.body());
-    }
     
     /**
      * 방법 3: 여러 조건을 조합한 유연한 검색
      * 한글명, 영문명 등 여러 필드에서 검색
      */
-    public List<MovieDto> searchMoviesFlexible(String searchTerm) throws Exception {
-        String encodedSearch = java.net.URLEncoder.encode("%" + searchTerm + "%", "UTF-8");
-        String url = String.format(
-            "%s/rest/v1/movies?or=(movie_ko_nm.ilike.%s,movie_en_nm.ilike.%s)", 
-            supabaseUrl, encodedSearch, encodedSearch);
+    @Override
+    public List<MovieDto> searchMoviesFlexible(String searchTerm) {
+        Map<String, Object> params = new HashMap<>();  
+       
+        try{
+            String initials = extractChoseong(searchTerm);
+            String jamo = decomposeToJamo(searchTerm);
+            
+            params.put("term", searchTerm);
+            params.put("termInitials", initials);
+            params.put("termJamo", jamo);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return movieMapper.searchMoviesFlexible(params);
         
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("apikey", supabaseApiKey)
-                .header("Authorization", "Bearer " + supabaseApiKey)
-                .header("Content-Type", "application/json")
-                .GET()
-                .build();
-        
-        HttpResponse<String> response = httpClient.send(request, 
-                                                       HttpResponse.BodyHandlers.ofString());
-        
-        return parseMoviesFromJson(response.body());
     }
     
     /**
      * 방법 4: 클라이언트 사이드에서 추가 필터링
      * DB에서 가져온 후 Java에서 유사도 검사
      */
-    public List<MovieDto> searchMoviesWithSimilarity(String searchTerm, double threshold) throws Exception {
+    public List<MovieDto> searchMoviesWithSimilarity(String searchTerm, double threshold){
         // 먼저 넓은 범위로 검색
         List<MovieDto> candidates = searchMoviesFlexible(searchTerm);
         
@@ -468,5 +421,68 @@ public class MovieServiceImpl implements MovieService {
         
         return dp[s1.length()][s2.length()];
     }
+
+    @Override
+    public List<MovieDto> searchMoviesByTitle(String movieName) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'searchMoviesByTitle'");
+    }
+
+    // 호환 자모 테이블
+    private static final char[] CHOSEONG = {
+        'ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'
+    };
+    private static final char[] JUNGSEONG = {
+        'ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'
+    };
+    private static final char[] JONGSEONG = {
+        '\0','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'
+    };
+
+    private static final int S_BASE = 0xAC00;
+    private static final int S_END  = 0xD7A3;
+    private static final int N_L = 19, N_V = 21, N_T = 28;
+    private static final int N_LV = N_V * N_T;
+
+    /** 초성 문자열만 추출 (예: "대한민국" -> "ㄷㅇㅁㄱ") */
+    public static String extractChoseong(String s) {
+    if (s == null || s.isEmpty()) return "";
+    StringBuilder sb = new StringBuilder(s.length());
+    for (int i = 0; i < s.length(); i++) {
+        char ch = s.charAt(i);
+        if (ch >= S_BASE && ch <= S_END) {
+            int idx = ch - S_BASE;
+            int l  = idx / N_LV;
+            sb.append(CHOSEONG[l]);
+        } else {
+            // 한글이 아니면 그대로 두거나 공백/영문 소문자만 유지 등 정책 선택
+            if (Character.isLetterOrDigit(ch)) sb.append(Character.toLowerCase(ch));
+        }
+    }
+    return sb.toString();
+    }
+
+    /** 완성형 -> 호환 자모(초성/중성/종성) 분해 (예: 종성까지 전개) */
+    public static String decomposeToJamo(String s) {
+    if (s == null || s.isEmpty()) return "";
+    StringBuilder sb = new StringBuilder(s.length() * 3);
+    for (int i = 0; i < s.length(); i++) {
+        char ch = s.charAt(i);
+        if (ch >= S_BASE && ch <= S_END) {
+            int idx = ch - S_BASE;
+            int l = idx / N_LV;
+            int v = (idx % N_LV) / N_T;
+            int t = idx % N_T;
+            sb.append(CHOSEONG[l]).append(JUNGSEONG[v]);
+            if (t > 0) sb.append(JONGSEONG[t]); // 종성 있으면 추가
+        } else {
+            // 비한글 처리: 필요 시 영문/숫자만 유지
+            if (Character.isLetterOrDigit(ch)) sb.append(Character.toLowerCase(ch));
+        }
+        sb.append(' '); // 자모간 구분 가시성(선택)
+    }
+    return sb.toString().trim().replaceAll("\\s+", " ");
+    }
+
 
 }

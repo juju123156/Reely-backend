@@ -16,6 +16,9 @@ public interface MovieService {
     int insertFileInfo(List<MovieDto> movieDto);
     MovieDto getMovieInfo(int movieId);
     void insertCrewsInfo(int movieId, JsonNode crewNode);
+    List<MovieDto> searchMoviesByTitle(String movieName) throws Exception;
+    List<MovieDto> searchMoviesFlexible(String movieName);
+    List<MovieDto> searchMoviesWithSimilarity(String movieName, double d);
 
 
 

@@ -1,8 +1,10 @@
 package com.reely.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.reely.dto.MovieDto;
 
@@ -30,4 +32,5 @@ public interface MovieMapper {
     Integer insertSoundtrackInfo(List<MovieDto> movieDto);
     MovieDto getMovieInfo(int movieId);
     Integer insertMovieInfo(MovieDto movieDto);
+    List<MovieDto> searchMoviesFlexible(Map<String, Object> params);
 }

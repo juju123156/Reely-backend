@@ -86,12 +86,14 @@ public class MovieController {
 
         return "Hello World";
     }
+
     @GetMapping(value = "/getMoviesInfo/{movieNm}" , produces = "application/json")
     public List<MovieDto> getMoviesInfo(@PathVariable("movieNm") String movieNm) {
         System.out.println("===========================Starting movie search==========================="+movieNm);
         ObjectMapper objectMapper = new ObjectMapper();
         JSONParser parser = new JSONParser();
         List<MovieDto> movieDtoList = new ArrayList<>();
+        List<MovieDto> searchMovieList = new ArrayList<>();
         
         try {
             // 1. 모든 API에서 데이터 수집
@@ -114,14 +116,33 @@ public class MovieController {
                     e.printStackTrace();
                 }
             }
+
+            searchMovieList = searchMovieByName(movieNm);
             
         } catch (Exception e) {
             e.printStackTrace();
         }
         
-        return movieDtoList;
+        return searchMovieList;
     }
     
+    @GetMapping(value = "/getMoviesInfo2/{movieNm}" , produces = "application/json")
+    public List<MovieDto> getMoviesInfo2(@PathVariable("movieNm") String movieNm) {
+        System.out.println("===========================Starting movie search2 ==========================="+movieNm);
+        List<MovieDto> searchMovieList = new ArrayList<>();
+        
+        try {
+            
+
+            searchMovieList = searchMovieByName(movieNm);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return searchMovieList;
+    }
+
     /**
      * KOBIS API에서 영화 데이터 수집
      */
@@ -1060,26 +1081,27 @@ public class MovieController {
         return spotifyDto;
     }
 
-    // try {
-    //     MovieSearchService searchService = new MovieSearchService(
-    //         "https://your-project.supabase.co",
-    //         "your-supabase-anon-key"
-    //     );
-        
-    //     // 기본 검색
-    //     List<Movie> results1 = searchService.searchMoviesByTitle("어벤져");
-    //     System.out.println("기본 검색 결과: " + results1);
-        
-    //     // 유연한 검색 (여러 필드)
-    //     List<Movie> results2 = searchService.searchMoviesFlexible("spider");
-    //     System.out.println("유연한 검색 결과: " + results2);
-        
-    //     // 유사도 기반 검색
-    //     List<Movie> results3 = searchService.searchMoviesWithSimilarity("아이언맨", 0.6);
-    //     System.out.println("유사도 검색 결과: " + results3);
-        
-    // } catch (Exception e) {
-    //     e.printStackTrace();
-    // }
+    private List<MovieDto> searchMovieByName(String movieName) throws Exception {
+        List<MovieDto> resultList = new ArrayList<>();
+        try {
+            // 유연한 검색 (여러 필드)
+            //List<MovieDto> results2 = searchService.searchMoviesFlexible("spider");
+            List<MovieDto> moviesFlexibleList = movieService.searchMoviesFlexible(movieName);
+            System.out.println("유연한 검색 결과: " + moviesFlexibleList);
+            
+            // 유사도 기반 검색
+            //List<MovieDto> results3 = searchService.searchMoviesWithSimilarity("아이언맨", 0.6);
+            List<MovieDto> moviesWithSimilarityList = movieService.searchMoviesWithSimilarity(movieName, 0.6);
+            System.out.println("유사도 검색 결과: " + moviesWithSimilarityList);
+            
+
+            resultList.addAll(moviesFlexibleList);
+            resultList.addAll(moviesWithSimilarityList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return resultList;
+    }
 
 }
