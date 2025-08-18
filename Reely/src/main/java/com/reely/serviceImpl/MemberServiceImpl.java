@@ -33,4 +33,9 @@ public class MemberServiceImpl implements MemberService {
         memberDto.setMemberPwd(bCryptPasswordEncoder.encode(memberDto.getMemberPwd())); // 암호화
         return memberMapper.insertMember(memberDto);
     }
+
+    @Override
+    public Boolean findMemberByMemberEmail(MemberDto memberDto) {
+        return memberMapper.findMemberByMemberEmail(memberDto);
+    }
 }

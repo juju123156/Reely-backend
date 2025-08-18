@@ -6,4 +6,6 @@ public interface MemberService {
     Boolean findMemberByMemberId(MemberDto memberDto);
 
     Integer insertMember(MemberDto memberDto);
+
+    Boolean findMemberByMemberEmail(MemberDto memberDto);
 }
