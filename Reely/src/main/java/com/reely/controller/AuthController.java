@@ -1,13 +1,16 @@
 package com.reely.controller;
 
+import com.reely.common.enums.SMSAuthType;
 import com.reely.dto.EmailDto;
+import com.reely.dto.MemberDto;
 import com.reely.dto.TokenDto;
 import com.reely.exception.CustomException;
-import com.reely.exception.ErrorCode;
+import com.reely.common.enums.ErrorCode;
 import com.reely.security.JWTUtil;
 import com.reely.security.TokenConstants;
 import com.reely.service.AuthService;
 import com.reely.service.EmailAuthService;
+import com.reely.service.MemberService;
 import jakarta.servlet.http.Cookie;
 
 import jakarta.validation.Valid;
@@ -15,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,10 +34,14 @@ public class AuthController {
 
     private final EmailAuthService emailAuthService;
 
-    public AuthController(JWTUtil jwtUtil, AuthService authService, EmailAuthService emailAuthService) {
+    private final MemberService memberService;
+
+
+    public AuthController(JWTUtil jwtUtil, AuthService authService, EmailAuthService emailAuthService, MemberService memberService) {
         this.jwtUtil = jwtUtil;
         this.authService = authService;
         this.emailAuthService = emailAuthService;
+        this.memberService = memberService;
     }
 
     @PostMapping("/reissue")
@@ -86,19 +94,29 @@ public class AuthController {
         return cookie;
     }
 
-    @PostMapping("/email/send")
-    public ResponseEntity<String> sendAuthCode(@Valid @RequestBody EmailDto emailDto) {
+    @PostMapping("/email/send/{authType}")
+    public ResponseEntity<?> sendAuthCode(@PathVariable String authType, @Valid @RequestBody EmailDto emailDto) {
+        emailDto.setAuthType(SMSAuthType.from(authType));
+
         emailAuthService.sendAuthCode(emailDto);
-        return ResponseEntity.ok("인증번호를 이메일로 발송했습니다.");
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/email/verify")
-    public ResponseEntity<String> verifyAuthCode(@Valid @RequestBody EmailDto emailDto) {
+    @PostMapping("/email/verify/{authType}")
+    public ResponseEntity<?> verifyAuthCode(@PathVariable String authType, @Valid @RequestBody EmailDto emailDto) {
+        SMSAuthType smsAuthType = SMSAuthType.from(authType);
+        emailDto.setAuthType(smsAuthType);
+
         boolean result = emailAuthService.verifyAuthCode(emailDto);
         if (result) {
-            return ResponseEntity.ok("인증에 성공했습니다.");
+            if (smsAuthType == SMSAuthType.FIND_ID) {
+                MemberDto memberDto = memberService.findMemberIdByMemberEmail(emailDto);
+                return new ResponseEntity<>(memberDto, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(true, HttpStatus.OK);
+
         } else {
-            return ResponseEntity.badRequest().body("인증번호가 일치하지 않거나 만료되었습니다.");
+            return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
         }
     }
 }

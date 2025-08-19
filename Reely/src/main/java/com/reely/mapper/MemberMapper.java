@@ -1,5 +1,6 @@
 package com.reely.mapper;
 
+import com.reely.dto.EmailDto;
 import com.reely.dto.MemberDto;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -16,4 +17,6 @@ public interface MemberMapper {
     MemberDto findMemberInfo(String memberId);
 
     Boolean findMemberByMemberEmail(MemberDto memberDto);
+
+    MemberDto findMemberIdByMemberEmail(EmailDto emailDto);
 }

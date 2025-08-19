@@ -1,5 +1,6 @@
 package com.reely.serviceImpl;
 
+import com.reely.dto.EmailDto;
 import com.reely.dto.MemberDto;
 import com.reely.mapper.MemberMapper;
 import com.reely.service.MemberService;
@@ -37,5 +38,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Boolean findMemberByMemberEmail(MemberDto memberDto) {
         return memberMapper.findMemberByMemberEmail(memberDto);
+    }
+
+    @Override
+    public MemberDto findMemberIdByMemberEmail(EmailDto emailDto) {
+        return memberMapper.findMemberIdByMemberEmail(emailDto);
     }
 }

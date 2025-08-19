@@ -10,6 +10,7 @@
         <typeAlias type="com.reely.dto.MemberDto" alias="member"></typeAlias>
         <typeAlias type="com.reely.dto.SettingDto" alias="setting"></typeAlias>
         <typeAlias type="com.reely.dto.MovieDto" alias="movie"></typeAlias>
+        <typeAlias type="com.reely.dto.EmailDto" alias="email"></typeAlias>
     </typeAliases>
     <mappers>
         <mapper resource="mapper/member-mapper.xml"/>

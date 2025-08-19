@@ -1,5 +1,6 @@
 package com.reely.dto;
 
+import com.reely.common.enums.SMSAuthType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -15,4 +16,6 @@ public class EmailDto {
 
     @Size(min = 6, message = "인증번호는 6자 이상입니다.")
     private String code;
+
+    private SMSAuthType authType;
 }
