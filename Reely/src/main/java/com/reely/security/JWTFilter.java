@@ -1,8 +1,6 @@
 package com.reely.security;
 
 import com.reely.dto.MemberDto;
-import com.reely.exception.CustomException;
-import com.reely.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,8 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import static com.reely.security.TokenConstants.*;
 
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {

@@ -7,7 +7,7 @@ public interface AuthService {
 
     void deleteRefreshToken(String username);
 
-    void saveEmailAuthCode(String email, String authCode, long expiredSeconds);
+    void saveEmailAuthCode(String email, String authType, long expiredSeconds);
 
     String getEmailAuthCode(String email);
 

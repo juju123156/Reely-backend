@@ -1,8 +1,6 @@
 package com.reely.serviceImpl;
 
 import com.reely.dto.MemberDto;
-import com.reely.exception.CustomException;
-import com.reely.exception.ErrorCode;
 import com.reely.security.CustomUserDetails;
 
 import jakarta.transaction.Transactional;

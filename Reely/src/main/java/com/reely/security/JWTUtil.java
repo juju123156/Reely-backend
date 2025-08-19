@@ -1,7 +1,5 @@
 package com.reely.security;
 
-import com.reely.exception.CustomException;
-import com.reely.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

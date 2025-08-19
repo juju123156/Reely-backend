@@ -1,5 +1,6 @@
 package com.reely.controller;
 
+import com.reely.dto.EmailDto;
 import com.reely.dto.MemberDto;
 import com.reely.security.CustomUserDetails;
 import com.reely.service.MemberService;
@@ -33,12 +34,14 @@ public class MemberController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    // todo 이메일 중복체크, 아이디 보여주기, 비밀번호 변경
     @PostMapping("/duplicate-email")
     public ResponseEntity<Boolean> duplicateEmail(@RequestBody MemberDto memberDto) {
         Boolean result = memberService.findMemberByMemberEmail(memberDto);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+    // todo 아이디 보여주기, 비밀번호 변경
+
     // 테스트 코드 추후 삭제
     @GetMapping("/test")
     public ResponseEntity<String> test(@AuthenticationPrincipal CustomUserDetails userDetails) {

@@ -38,9 +38,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void saveEmailAuthCode(String email, String authCode, long expiredSeconds) {
+    public void saveEmailAuthCode(String email, String authType, long expiredSeconds) {
         log.info("이메일 인증코드 저장");
-        redisTemplate.opsForValue().set(email, authCode, expiredSeconds, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(email, authType, expiredSeconds, TimeUnit.SECONDS);
     }
 
     @Override

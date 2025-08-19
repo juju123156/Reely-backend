@@ -2,7 +2,7 @@ package com.reely.serviceImpl;
 
 import com.reely.dto.EmailDto;
 import com.reely.exception.CustomException;
-import com.reely.exception.ErrorCode;
+import com.reely.common.enums.ErrorCode;
 import com.reely.service.AuthService;
 import com.reely.service.EmailAuthService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,8 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 
     @Override
     public void sendAuthCode(EmailDto emailDto) {
-        String code = generateCode();
+        String code = this.generateCode();
+        String key = this.generateKey(emailDto.getEmail(), emailDto.getAuthType().name());
 
         try {
             // todo 전송 메시지 html 적용하기
@@ -39,7 +40,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
             javaMailSender.send(message);
 
             // Redis에 저장
-            authService.saveEmailAuthCode(emailDto.getEmail(), code, EXPIRE_SECONDS);
+            authService.saveEmailAuthCode(key, code, EXPIRE_SECONDS);
 
         } catch (MailException e) {
             throw new CustomException(ErrorCode.INTERNAL_ERROR, "메일 전송에 실패했습니다.");
@@ -48,7 +49,9 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 
     @Override
     public boolean verifyAuthCode(EmailDto emailDto) {
-        String savedCode = authService.getEmailAuthCode(emailDto.getEmail());
+        String key = this.generateKey(emailDto.getEmail(), emailDto.getAuthType().name());
+        String savedCode = authService.getEmailAuthCode(key);
+
         if (savedCode == null) {
             log.info("인증번호가 만료되었거나 존재하지 않습니다. emailDto.getEmail()={}", emailDto.getEmail());
             return false;
@@ -56,7 +59,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
         boolean matched = savedCode.equals(emailDto.getCode());
         if (matched) {
             // 검증 완료 후 인증번호 삭제
-            authService.deleteEmailAuthCode(emailDto.getEmail());
+            authService.deleteEmailAuthCode(key);
             log.info("이메일 인증 성공. emailDto.getEmail()={}", emailDto.getEmail());
         } else {
             log.info("이메일 인증 실패. emailDto.getEmail()={}, emailDto.getCode()={}, saved={}", emailDto.getEmail(), emailDto.getCode(), savedCode);
@@ -68,5 +71,9 @@ public class EmailAuthServiceImpl implements EmailAuthService {
     private String generateCode() {
         int code = (int) (Math.random() * 900000) + 100000;
         return String.valueOf(code);
+    }
+
+    private String generateKey(String email, String authType) {
+        return authType + ":" + email;
     }
 }
