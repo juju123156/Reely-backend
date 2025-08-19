@@ -9,6 +9,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -350,12 +352,14 @@ public class MovieServiceImpl implements MovieService {
         
         // 유사도 기반으로 필터링 및 정렬
         return candidates.stream()
-                .map(movie -> new MovieWithScore(movie, calculateSimilarity(movie.getMovieKoNm(), searchTerm)))
-                .filter(movieWithScore -> movieWithScore.getScore() >= threshold)
-                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
-                .map(MovieWithScore::getMovie)
-                .toList();
-    }
+            .filter(java.util.Objects::nonNull)
+            .filter(m -> m.getMovieKoNm() != null)
+            .map(m -> new MovieWithScore(m, calculateSimilarity(m.getMovieKoNm(), searchTerm)))
+            .filter(mws -> mws.getScore() >= threshold)
+            .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
+            .map(MovieWithScore::getMovie)
+            .collect(Collectors.toList());
+
     
     // JSON 응답을 Movie 객체 리스트로 변환
     private List<MovieDto> parseMoviesFromJson(String json) throws Exception {

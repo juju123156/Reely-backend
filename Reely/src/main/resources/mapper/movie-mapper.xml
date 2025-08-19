@@ -341,5 +341,6 @@
         ORDER BY movie_open_dt DESC
         LIMIT 200
     </select>
-
+<!--SELECT upsert_movie(:movie_id, :movie_ko_nm, :movie_en_nm, :movie_open_dt);
+-->
 </mapper>
