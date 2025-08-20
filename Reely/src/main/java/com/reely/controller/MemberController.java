@@ -1,11 +1,14 @@
 package com.reely.controller;
 
-import com.reely.dto.EmailDto;
+import com.reely.common.enums.ErrorCode;
 import com.reely.dto.MemberDto;
+import com.reely.dto.ResponseDto;
+import com.reely.exception.CustomException;
 import com.reely.security.CustomUserDetails;
 import com.reely.service.MemberService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,24 +26,41 @@ public class MemberController {
     }
 
     @PostMapping("/duplicate-id")
-    public ResponseEntity<Boolean> duplicateId(@RequestBody MemberDto memberDto) {
-        Boolean result = memberService.findMemberByMemberId(memberDto);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<ResponseDto<Boolean>> duplicateId(@RequestBody MemberDto memberDto) {
+        Boolean result = memberService.existsByMemberId(memberDto);
+        return ResponseEntity.ok(
+                ResponseDto.<Boolean>builder()
+                        .success(true)
+                        .data(result)
+                        .build()
+        );
     }
 
     @PostMapping("/join")
-    public ResponseEntity<Integer> join(@Valid @RequestBody MemberDto memberDto) {
-        Integer result = memberService.insertMember(memberDto);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<ResponseDto<Integer>> join(@Valid @RequestBody MemberDto memberDto) {
+        try {
+            Integer result = memberService.insertMember(memberDto);
+            return ResponseEntity.ok(
+                    ResponseDto.<Integer>builder()
+                            .success(true)
+                            .data(result)
+                            .build()
+            );
+        } catch (DuplicateKeyException e) {
+            throw new CustomException(ErrorCode.USER_ALREADY_EXISTS);
+        }
     }
 
     @PostMapping("/duplicate-email")
-    public ResponseEntity<Boolean> duplicateEmail(@RequestBody MemberDto memberDto) {
-        Boolean result = memberService.findMemberByMemberEmail(memberDto);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+    public ResponseEntity<ResponseDto<Boolean>> duplicateEmail(@RequestBody MemberDto memberDto) {
+        Boolean result = memberService.existsByMemberEmail(memberDto);
+        return ResponseEntity.ok(
+                ResponseDto.<Boolean>builder()
+                        .success(true)
+                        .data(result)
+                        .build()
+        );
     }
-
-    // todo 아이디 보여주기, 비밀번호 변경
 
     // 테스트 코드 추후 삭제
     @GetMapping("/test")

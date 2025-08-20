@@ -5,11 +5,11 @@ import com.reely.dto.MemberDto;
 import jakarta.validation.Valid;
 
 public interface MemberService {
-    Boolean findMemberByMemberId(MemberDto memberDto);
+    Boolean existsByMemberId(MemberDto memberDto);
 
     Integer insertMember(MemberDto memberDto);
 
-    Boolean findMemberByMemberEmail(MemberDto memberDto);
+    Boolean existsByMemberEmail(MemberDto memberDto);
 
     MemberDto findMemberIdByMemberEmail(EmailDto emailDto);
 }

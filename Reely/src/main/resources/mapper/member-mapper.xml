@@ -34,7 +34,7 @@
             )
     </insert>
 
-    <select id="findMemberByMemberId" parameterType="member" resultType="Boolean">
+    <select id="existsByMemberId" parameterType="member" resultType="Boolean">
         select count(member_id)
           from member
          where member_id = #{memberId}
@@ -53,7 +53,7 @@
           and del_yn != 'Y'
     </select>
 
-    <select id="findMemberByMemberEmail" parameterType="member" resultType="Boolean">
+    <select id="existsByMemberEmail" parameterType="member" resultType="Boolean">
         select count(member_email)
           from member
          where member_email = #{memberEmail}
