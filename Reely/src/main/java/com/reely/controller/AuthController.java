@@ -79,7 +79,7 @@ public class AuthController {
                 .refreshToken(newRefresh)
                 .build();
 
-        return new ResponseEntity<>(tokenDto, HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     //@PostMapping("/logout")
@@ -99,7 +99,7 @@ public class AuthController {
         emailDto.setAuthType(SMSAuthType.from(authType));
 
         emailAuthService.sendAuthCode(emailDto);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/email/verify/{authType}")
@@ -111,12 +111,12 @@ public class AuthController {
         if (result) {
             if (smsAuthType == SMSAuthType.FIND_ID) {
                 MemberDto memberDto = memberService.findMemberIdByMemberEmail(emailDto);
-                return new ResponseEntity<>(memberDto, HttpStatus.OK);
+                return ResponseEntity.ok(memberDto);
             }
-            return new ResponseEntity<>(true, HttpStatus.OK);
+            return ResponseEntity.ok(true);
 
         } else {
-            return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.ok(false);
         }
     }
 }
