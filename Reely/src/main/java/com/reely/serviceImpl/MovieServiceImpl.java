@@ -346,21 +346,21 @@ public class MovieServiceImpl implements MovieService {
      * 방법 4: 클라이언트 사이드에서 추가 필터링
      * DB에서 가져온 후 Java에서 유사도 검사
      */
-    public List<MovieDto> searchMoviesWithSimilarity(String searchTerm, double threshold){
+    public List<MovieDto> searchMoviesWithSimilarity(String searchTerm, double threshold) {
         // 먼저 넓은 범위로 검색
         List<MovieDto> candidates = searchMoviesFlexible(searchTerm);
-        
+
         // 유사도 기반으로 필터링 및 정렬
         return candidates.stream()
-            .filter(java.util.Objects::nonNull)
-            .filter(m -> m.getMovieKoNm() != null)
-            .map(m -> new MovieWithScore(m, calculateSimilarity(m.getMovieKoNm(), searchTerm)))
-            .filter(mws -> mws.getScore() >= threshold)
-            .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
-            .map(MovieWithScore::getMovie)
-            .collect(Collectors.toList());
+                .filter(java.util.Objects::nonNull)
+                .filter(m -> m.getMovieKoNm() != null)
+                .map(m -> new MovieWithScore(m, calculateSimilarity(m.getMovieKoNm(), searchTerm)))
+                .filter(mws -> mws.getScore() >= threshold)
+                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
+                .map(MovieWithScore::getMovie)
+                .collect(Collectors.toList());
 
-    
+    }
     // JSON 응답을 Movie 객체 리스트로 변환
     private List<MovieDto> parseMoviesFromJson(String json) throws Exception {
         JsonNode jsonNode = objectMapper.readTree(json);
