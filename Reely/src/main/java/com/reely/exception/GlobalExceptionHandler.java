@@ -1,13 +1,14 @@
 package com.reely.exception;
 
+import com.reely.common.enums.ErrorCode;
+import com.reely.dto.ResponseDto;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,10 +16,16 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+    public ResponseEntity<ResponseDto<Object>> handleCustomException(CustomException ex) {
         return ResponseEntity
-                .status(e.getErrorCode().getStatus())
-                .body(ErrorResponse.of(e.getErrorCode(), e.getMessage()));
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ResponseDto.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .data(null)
+                        .errorCode(ex.getErrorCode())
+                        .build()
+                );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -31,14 +38,27 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception e) {
+    public ResponseEntity<ResponseDto<Object>> handleException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "INTERNAL_SERVER_ERROR",
-                        e.getMessage(),
-                        LocalDateTime.now()
-                ));
+                .body(ResponseDto.builder()
+                        .success(false)
+                        .message(ErrorCode.INTERNAL_ERROR.getMessage())
+                        .data(null)
+                        .errorCode(ErrorCode.INTERNAL_ERROR)
+                        .build()
+                );
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ResponseDto<Object>> handleDuplicateKey(DuplicateKeyException ex) {
+        return ResponseEntity
+                .status(ErrorCode.USER_ALREADY_EXISTS.getStatus())
+                .body(ResponseDto.builder()
+                        .success(false)
+                        .message(ErrorCode.USER_ALREADY_EXISTS.getMessage())
+                        .data(null)
+                        .errorCode(ErrorCode.USER_ALREADY_EXISTS)
+                        .build());
     }
 }

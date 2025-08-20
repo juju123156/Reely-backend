@@ -24,8 +24,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Boolean findMemberByMemberId(MemberDto memberDto) {
-        return memberMapper.findMemberByMemberId(memberDto);
+    public Boolean existsByMemberId(MemberDto memberDto) {
+        return memberMapper.existsByMemberId(memberDto);
     }
 
     @Override
@@ -36,8 +36,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Boolean findMemberByMemberEmail(MemberDto memberDto) {
-        return memberMapper.findMemberByMemberEmail(memberDto);
+    public Boolean existsByMemberEmail(MemberDto memberDto) {
+        return memberMapper.existsByMemberEmail(memberDto);
     }
 
     @Override

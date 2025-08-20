@@ -3,6 +3,7 @@ package com.reely.controller;
 import com.reely.common.enums.SMSAuthType;
 import com.reely.dto.EmailDto;
 import com.reely.dto.MemberDto;
+import com.reely.dto.ResponseDto;
 import com.reely.dto.TokenDto;
 import com.reely.exception.CustomException;
 import com.reely.common.enums.ErrorCode;
@@ -45,7 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(@RequestBody TokenDto resTokenDto) {
+    public ResponseEntity<ResponseDto<?>> reissue(@RequestBody TokenDto resTokenDto) {
         //get refresh token
         String refresh = resTokenDto.getRefreshToken();
 
@@ -67,7 +68,7 @@ public class AuthController {
         // 토큰 발급
         String newAccess = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION);
         String newRefresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, TokenConstants.REFRESH_TOKEN_EXPIRATION);
-        
+
         // 기존 refresh 삭제 처리
         authService.deleteRefreshToken(username);
 
@@ -79,14 +80,20 @@ public class AuthController {
                 .refreshToken(newRefresh)
                 .build();
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .success(true)
+                        .message("토큰이 발급되었습니다.")
+                        .data(tokenDto)
+                        .build()
+        );
     }
 
     //@PostMapping("/logout")
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
+        cookie.setMaxAge(24 * 60 * 60);
         //cookie.setSecure(true);
         //cookie.setPath("/");
         cookie.setHttpOnly(true);
@@ -95,28 +102,45 @@ public class AuthController {
     }
 
     @PostMapping("/email/send/{authType}")
-    public ResponseEntity<?> sendAuthCode(@PathVariable String authType, @Valid @RequestBody EmailDto emailDto) {
+    public ResponseEntity<ResponseDto<?>> sendAuthCode(@PathVariable String authType, @Valid @RequestBody EmailDto emailDto) {
         emailDto.setAuthType(SMSAuthType.from(authType));
 
         emailAuthService.sendAuthCode(emailDto);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .success(true)
+                        .message("인증 메일을 전송했습니다.")
+                        .build()
+        );
     }
 
     @PostMapping("/email/verify/{authType}")
-    public ResponseEntity<?> verifyAuthCode(@PathVariable String authType, @Valid @RequestBody EmailDto emailDto) {
+    public ResponseEntity<ResponseDto<?>> verifyAuthCode(@PathVariable String authType, @Valid @RequestBody EmailDto emailDto) {
         SMSAuthType smsAuthType = SMSAuthType.from(authType);
         emailDto.setAuthType(smsAuthType);
 
         boolean result = emailAuthService.verifyAuthCode(emailDto);
-        if (result) {
-            if (smsAuthType == SMSAuthType.FIND_ID) {
-                MemberDto memberDto = memberService.findMemberIdByMemberEmail(emailDto);
-                return ResponseEntity.ok(memberDto);
-            }
-            return ResponseEntity.ok(true);
 
-        } else {
-            return ResponseEntity.ok(false);
+        if (!result) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ResponseDto.builder()
+                            .success(false)
+                            .message("인증에 실패했습니다.")
+                            .errorCode(ErrorCode.UNAUTHORIZED)
+                            .build());
         }
+
+        // 인증 성공 시 Builder 생성
+        ResponseDto.ResponseDtoBuilder<Object> builder = ResponseDto.builder()
+                .success(true)
+                .message("인증이 완료되었습니다.");
+
+        // FIND_ID일 경우 data 추가
+        if (smsAuthType == SMSAuthType.FIND_ID) {
+            MemberDto memberDto = memberService.findMemberIdByMemberEmail(emailDto);
+            builder.data(memberDto);
+        }
+
+        return ResponseEntity.ok(builder.build());
     }
 }

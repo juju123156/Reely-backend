@@ -12,11 +12,11 @@ public interface MemberMapper {
 
     Integer insertMember(MemberDto memberDto);
 
-    Boolean findMemberByMemberId(MemberDto memberDto);
+    Boolean existsByMemberId(MemberDto memberDto);
 
     MemberDto findMemberInfo(String memberId);
 
-    Boolean findMemberByMemberEmail(MemberDto memberDto);
+    Boolean existsByMemberEmail(MemberDto memberDto);
 
     MemberDto findMemberIdByMemberEmail(EmailDto emailDto);
 }
