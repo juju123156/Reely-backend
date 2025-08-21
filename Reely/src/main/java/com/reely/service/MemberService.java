@@ -12,4 +12,6 @@ public interface MemberService {
     Boolean existsByMemberEmail(MemberDto memberDto);
 
     MemberDto findMemberIdByMemberEmail(EmailDto emailDto);
+
+    Boolean updateMemberPwdByMemberEmail(MemberDto memberDto);
 }

@@ -42,8 +42,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         this.failureHandler = failureHandler;
         this.authService =authService;
         this.setFilterProcessesUrl("/api/auth/login");
-        this.setFilterProcessesUrl("/api/**");
-        
     }
 
     @Override

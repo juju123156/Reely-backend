@@ -19,4 +19,6 @@ public interface MemberMapper {
     Boolean existsByMemberEmail(MemberDto memberDto);
 
     MemberDto findMemberIdByMemberEmail(EmailDto emailDto);
+
+    Boolean updateMemberPwdByMemberEmail(MemberDto memberDto);
 }
