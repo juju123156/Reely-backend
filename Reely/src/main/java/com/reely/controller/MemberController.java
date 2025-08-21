@@ -62,6 +62,18 @@ public class MemberController {
         );
     }
 
+    @PostMapping("/reset-pwd")
+    public ResponseEntity<ResponseDto<Boolean>> resetPwd(@RequestBody MemberDto memberDto) {
+        Boolean result = memberService.updateMemberPwdByMemberEmail(memberDto);
+
+        return ResponseEntity.ok(
+                ResponseDto.<Boolean>builder()
+                        .success(true)
+                        .data(result)
+                        .build()
+        );
+    }
+
     // 테스트 코드 추후 삭제
     @GetMapping("/test")
     public ResponseEntity<String> test(@AuthenticationPrincipal CustomUserDetails userDetails) {

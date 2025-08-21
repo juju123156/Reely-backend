@@ -65,4 +65,11 @@
          where member_email = #{email}
            and del_yn != 'Y'
     </select>
+    <update id="updateMemberPwdByMemberEmail" parameterType="member">
+        update member
+           set member_pwd = #{memberPwd}
+         where member_email = #{memberEmail}
+           and del_yn != 'Y'
+    </update>
+
 </mapper>

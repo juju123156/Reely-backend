@@ -44,4 +44,11 @@ public class MemberServiceImpl implements MemberService {
     public MemberDto findMemberIdByMemberEmail(EmailDto emailDto) {
         return memberMapper.findMemberIdByMemberEmail(emailDto);
     }
+
+    @Override
+    @Transactional
+    public Boolean updateMemberPwdByMemberEmail(MemberDto memberDto) {
+        memberDto.setMemberPwd(bCryptPasswordEncoder.encode(memberDto.getMemberPwd())); // 암호화
+        return memberMapper.updateMemberPwdByMemberEmail(memberDto);
+    }
 }
