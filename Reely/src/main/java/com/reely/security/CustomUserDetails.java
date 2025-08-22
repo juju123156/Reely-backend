@@ -30,6 +30,7 @@ public class CustomUserDetails implements UserDetails {
 
         return collection;
     }
+    public Long getMemberPk() {return memberDto.getMemberPk();}
 
     @Override
     public String getPassword() {
@@ -38,7 +39,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return memberDto.getMemberPk();
+        return memberDto.getMemberId();
     }
 
     @Override

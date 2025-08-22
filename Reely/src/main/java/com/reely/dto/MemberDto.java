@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class MemberDto {
-    private String memberPk;
+    private Long memberPk;
 
     @NotBlank(message = "아이디는 필수입니다.")
     private String memberId;

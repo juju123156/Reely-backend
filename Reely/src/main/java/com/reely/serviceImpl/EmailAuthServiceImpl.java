@@ -2,7 +2,7 @@ package com.reely.serviceImpl;
 
 import com.reely.dto.EmailDto;
 import com.reely.exception.CustomException;
-import com.reely.common.enums.ErrorCode;
+import com.reely.exception.ErrorCode;
 import com.reely.service.AuthService;
 import com.reely.service.EmailAuthService;
 import lombok.extern.slf4j.Slf4j;

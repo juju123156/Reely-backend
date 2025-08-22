@@ -6,7 +6,7 @@ import com.reely.dto.MemberDto;
 import com.reely.dto.ResponseDto;
 import com.reely.dto.TokenDto;
 import com.reely.exception.CustomException;
-import com.reely.common.enums.ErrorCode;
+import com.reely.exception.ErrorCode;
 import com.reely.security.JWTUtil;
 import com.reely.security.TokenConstants;
 import com.reely.service.AuthService;
@@ -58,6 +58,7 @@ public class AuthController {
 
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
+        Long memberPk = jwtUtil.getMemberPk(refresh);
 
         // refresh 토큰이 db에 존재하는지 확인
         if (!authService.isExistRefreshToken(username)) {
@@ -66,8 +67,8 @@ public class AuthController {
         }
 
         // 토큰 발급
-        String newAccess = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION);
-        String newRefresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, TokenConstants.REFRESH_TOKEN_EXPIRATION);
+        String newAccess = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION, memberPk);
+        String newRefresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, TokenConstants.REFRESH_TOKEN_EXPIRATION, memberPk);
 
         // 기존 refresh 삭제 처리
         authService.deleteRefreshToken(username);

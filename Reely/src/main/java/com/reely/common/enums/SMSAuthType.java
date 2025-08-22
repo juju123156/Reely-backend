@@ -2,6 +2,7 @@ package com.reely.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.reely.exception.CustomException;
+import com.reely.exception.ErrorCode;
 import lombok.Getter;
 
 @Getter
