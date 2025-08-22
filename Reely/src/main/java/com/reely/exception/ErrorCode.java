@@ -1,4 +1,4 @@
-package com.reely.common.enums;
+package com.reely.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

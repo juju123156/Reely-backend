@@ -48,10 +48,12 @@ public class JWTFilter extends OncePerRequestFilter {
         // 토큰에서 사용자 정보 추출
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
+        Long memberPk = jwtUtil.getMemberPk(accessToken);
 
         MemberDto memberDto = new MemberDto();
-        memberDto.setMemberPk(username);
+        memberDto.setMemberId(username);
         memberDto.setRole(role);
+        memberDto.setMemberPk(memberPk);
 
         // 사용자 인증 정보 설정
         CustomUserDetails customUserDetails = new CustomUserDetails(memberDto);

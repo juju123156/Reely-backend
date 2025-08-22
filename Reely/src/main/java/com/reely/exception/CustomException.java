@@ -1,6 +1,5 @@
 package com.reely.exception;
 
-import com.reely.common.enums.ErrorCode;
 import lombok.Getter;
 
 @Getter

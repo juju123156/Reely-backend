@@ -76,16 +76,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         //유저 정보
-        String username = authentication.getName();
+        /*String username = authentication.getName();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
-        String role = auth.getAuthority();
+        String role = auth.getAuthority();*/
+
+        // CustomUserDetails에서 정보 가져오기
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String username = userDetails.getUsername();       // memberId
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+        Long memberPk = userDetails.getMemberPk();         // memberPk 추가
 
         // 토큰 생성
-        String access = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION);
-        String refresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, TokenConstants.REFRESH_TOKEN_EXPIRATION);
+        String access = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_ACCESS, username, role, TokenConstants.ACCESS_TOKEN_EXPIRATION, memberPk);
+        String refresh = jwtUtil.createJwt(TokenConstants.TOKEN_TYPE_REFRESH, username, role, TokenConstants.REFRESH_TOKEN_EXPIRATION, memberPk);
 
         // Refresh 토큰을 Redis에 저장
         authService.saveRefreshToken(username, refresh, TokenConstants.REFRESH_TOKEN_EXPIRATION);

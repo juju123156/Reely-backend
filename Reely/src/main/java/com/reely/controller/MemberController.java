@@ -1,6 +1,6 @@
 package com.reely.controller;
 
-import com.reely.common.enums.ErrorCode;
+import com.reely.exception.ErrorCode;
 import com.reely.dto.MemberDto;
 import com.reely.dto.ResponseDto;
 import com.reely.exception.CustomException;

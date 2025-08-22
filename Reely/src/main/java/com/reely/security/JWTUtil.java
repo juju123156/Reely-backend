@@ -58,8 +58,17 @@ public class JWTUtil {
                 .before(Date.from(this.getDateTime().toInstant()));
     }
 
+    public Long getMemberPk(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("memberPk", Long.class);
+    }
 
-    public String createJwt(String type, String username, String role, Long expiredMs) {
+
+    public String createJwt(String type, String username, String role, Long expiredMs, Long memberPk) {
         // 서울 시간대로 현재 시간 가져오기
         Date issuedAt = Date.from(this.getDateTime().toInstant());  // ZonedDateTime을 Date로 변환
         Date expiration = Date.from(this.getDateTime().plusMinutes(expiredMs).toInstant());  // 만료 시간 설정
@@ -68,6 +77,7 @@ public class JWTUtil {
                 .claim("type", type)
                 .claim("username", username)
                 .claim("role", role)
+                .claim("memberPk", memberPk)
                 .issuedAt(issuedAt)
                 .expiration(expiration)
                 .signWith(secretKey)

@@ -1,6 +1,6 @@
 package com.reely.dto;
 
-import com.reely.common.enums.ErrorCode;
+import com.reely.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
