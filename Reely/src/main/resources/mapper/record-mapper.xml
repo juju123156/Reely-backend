@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reely.mapper.RecordMapper">
+    <select id="selectRecordList" parameterType="record" resultType="record">
+        select r.record_ticket_price as recordTicketPrice
+             , r.record_md_price as recordMdPrice
+             , r.record_score as recordScore
+             , r.record_reg_dt as recordRegDt
+             , r.record_mod_dt as recordModDt
+             , r.record_id as recordId
+             , r.movie_id as movieId
+             , m.movie_ko_nm as movieKoNm
+             , m.movie_en_nm as movieEnNm
+             , r.member_pk as memberPk
+             , r.record_watch_dt as recordWatchAt
+             , r.del_yn as delYn
+             , r.record_content as recordContent
+             , r.record_cinema as recordCinema
+             , r.record_seat as recordSeat
+             , r.record_with as recordWith
+             , r.record_tag as recordTag
+          from record r
+     left join movie m on r.movie_id = m.movie_id
+         where member_pk = #{memberPk}
+    </select>
+</mapper>
