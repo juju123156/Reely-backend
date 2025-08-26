@@ -9,4 +9,10 @@ import java.util.List;
 public interface RecordMapper {
 
     List<RecordDto> selectRecordList(RecordDto recordDto);
+
+    void insertRecord(RecordDto recordDto);
+
+    RecordDto selectRecordByRecordIdAndMemberPk(RecordDto recordDto);
+
+    Integer updateRecord(RecordDto recordDto);
 }
