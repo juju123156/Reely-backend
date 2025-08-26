@@ -22,6 +22,81 @@
              , r.record_tag as recordTag
           from record r
      left join movie m on r.movie_id = m.movie_id
-         where member_pk = #{memberPk}
+         where r.member_pk = #{memberPk}
+           and r.del_yn = 'N'
     </select>
+    <insert id="insertRecord" parameterType="record" useGeneratedKeys="true" keyProperty="recordId">
+        insert into record
+        (
+          record_ticket_price
+        , record_md_price
+        , record_score
+        , record_reg_dt
+        , movie_id
+        , member_pk
+        , record_watch_dt
+        , del_yn
+        , record_content
+        , record_cinema
+        , record_seat
+        , record_with
+        , record_tag
+        )
+        values
+        (
+          #{recordTicketPrice}
+        , #{recordMdPrice}
+        , #{recordScore}
+        , current_timestamp
+        , #{movieId}
+        , #{memberPk}
+        , to_date(#{recordWatchDt}, 'YYYYMMDD')
+        , 'N'
+        , #{recordContent}
+        , #{recordCinema}
+        , #{recordSeat}
+        , #{recordWith}
+        , #{recordTag}
+        )
+    </insert>
+    <select id="selectRecordByRecordIdAndMemberPk" parameterType="record" resultType="record">
+        select r.record_ticket_price as recordTicketPrice
+             , r.record_md_price as recordMdPrice
+             , r.record_score as recordScore
+             , r.record_reg_dt as recordRegDt
+             , r.record_mod_dt as recordModDt
+             , r.record_id as recordId
+             , r.movie_id as movieId
+             , m.movie_ko_nm as movieKoNm
+             , m.movie_en_nm as movieEnNm
+             , r.member_pk as memberPk
+             , r.record_watch_dt as recordWatchAt
+             , r.del_yn as delYn
+             , r.record_content as recordContent
+             , r.record_cinema as recordCinema
+             , r.record_seat as recordSeat
+             , r.record_with as recordWith
+             , r.record_tag as recordTag
+          from record r
+     left join movie m on r.movie_id = m.movie_id
+         where r.member_pk = #{memberPk}
+           and r.record_id = #{recordId}
+           and r.del_yn = 'N'
+    </select>
+    <update id="updateRecord" parameterType="record">
+        update record
+           set record_content       = COALESCE(#{recordContent}, record_content)
+             , record_ticket_price  = COALESCE(#{recordTicketPrice}, record_ticket_price)
+             , record_md_price      = COALESCE(#{recordMdPrice}, record_md_price)
+             , record_score         = COALESCE(#{recordScore}, record_score)
+             , record_watch_dt      = COALESCE(to_date(#{recordWatchDt}, 'YYYYMMDD'), record_watch_dt)
+             , record_cinema        = COALESCE(#{recordCinema}, record_cinema)
+             , record_seat          = COALESCE(#{recordSeat}, record_seat)
+             , record_with          = COALESCE(#{recordWith}, record_with)
+             , record_tag           = COALESCE(#{recordTag}, record_tag)
+             , record_reg_dt        = record_reg_dt
+             , record_mod_dt        = current_timestamp
+         where record_id = #{recordId}
+           and member_pk = #{memberPk}
+    </update>
 </mapper>

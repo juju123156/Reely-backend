@@ -12,9 +12,9 @@ public class RecordDto {
     private Long movieId;
     private Long memberPk;
 
-    private String recordTicketPrice;
-    private String recordMdPrice;
-    private String recordScore;
+    private Integer recordTicketPrice;
+    private Integer recordMdPrice;
+    private Integer recordScore;
     private String recordRegDt;
     private String recordModDt;
     private String recordWatchDt;

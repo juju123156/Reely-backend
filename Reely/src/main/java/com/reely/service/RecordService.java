@@ -5,5 +5,11 @@ import com.reely.dto.RecordDto;
 import java.util.List;
 
 public interface RecordService {
-    List<RecordDto> selectRecordList(RecordDto recordDto);
+    List<RecordDto> getRecordList(RecordDto recordDto);
+
+    Long saveRecord(RecordDto recordDto);
+
+    RecordDto getRecord(RecordDto recordDto);
+
+    void updateRecord(RecordDto recordDto);
 }
