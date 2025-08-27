@@ -15,4 +15,6 @@ public interface RecordMapper {
     RecordDto selectRecordByRecordIdAndMemberPk(RecordDto recordDto);
 
     Integer updateRecord(RecordDto recordDto);
+
+    Integer deleteRecord(RecordDto recordDto);
 }

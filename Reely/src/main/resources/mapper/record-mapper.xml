@@ -23,7 +23,7 @@
           from record r
      left join movie m on r.movie_id = m.movie_id
          where r.member_pk = #{memberPk}
-           and r.del_yn = 'N'
+           and r.del_yn != 'Y'
     </select>
     <insert id="insertRecord" parameterType="record" useGeneratedKeys="true" keyProperty="recordId">
         insert into record
@@ -81,7 +81,7 @@
      left join movie m on r.movie_id = m.movie_id
          where r.member_pk = #{memberPk}
            and r.record_id = #{recordId}
-           and r.del_yn = 'N'
+           and r.del_yn != 'Y'
     </select>
     <update id="updateRecord" parameterType="record">
         update record
@@ -96,6 +96,12 @@
              , record_tag           = COALESCE(#{recordTag}, record_tag)
              , record_reg_dt        = record_reg_dt
              , record_mod_dt        = current_timestamp
+         where record_id = #{recordId}
+           and member_pk = #{memberPk}
+    </update>
+    <update id="deleteRecord" parameterType="record">
+        update record
+           set del_yn = 'Y'
          where record_id = #{recordId}
            and member_pk = #{memberPk}
     </update>

@@ -54,12 +54,24 @@ public class RecordController {
         );
     }
 
-    @PostMapping("/{recordId}")
+    @PutMapping("/{recordId}")
     public ResponseEntity<?> updateRecord(@PathVariable Long recordId,
                                           @RequestBody RecordDto recordDto) {
 
         recordDto.setRecordId(recordId);
         recordService.updateRecord(recordDto);
+        return ResponseEntity.ok(
+                ResponseDto.builder()
+                        .success(true)
+                        .build()
+        );
+    }
+
+    @DeleteMapping("/{recordId}")
+    public ResponseEntity<?> deleteRecord(@PathVariable Long recordId,
+                                          @RequestBody RecordDto recordDto) {
+        recordDto.setRecordId(recordId);
+        recordService.deleteRecord(recordDto);
         return ResponseEntity.ok(
                 ResponseDto.builder()
                         .success(true)
