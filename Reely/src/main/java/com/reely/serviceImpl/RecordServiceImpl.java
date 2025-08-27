@@ -49,4 +49,14 @@ public class RecordServiceImpl implements RecordService {
             throw new CustomException(ErrorCode.INTERNAL_ERROR, "1개 이상의 레코드가 수정되었습니다.");
         }
     }
+
+    @Override
+    @Transactional
+    public void deleteRecord(RecordDto recordDto) {
+        recordDto.setMemberPk(SecurityUtil.getCurrentMemberPk());
+        Integer result = recordMapper.deleteRecord(recordDto);
+        if (result != 1) {
+            throw new CustomException(ErrorCode.INTERNAL_ERROR, "1개 이상의 레코드가 수정되었습니다.");
+        }
+    }
 }

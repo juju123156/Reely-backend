@@ -12,4 +12,6 @@ public interface RecordService {
     RecordDto getRecord(RecordDto recordDto);
 
     void updateRecord(RecordDto recordDto);
+
+    void deleteRecord(RecordDto recordDto);
 }
