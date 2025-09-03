@@ -332,8 +332,10 @@ public class MovieServiceImpl implements MovieService {
             String jamo = decomposeToJamo(searchTerm);
             
             params.put("term", searchTerm);
-            params.put("termInitials", initials);
-            params.put("termJamo", jamo);
+            params.put("termInitials", initials.replaceAll("\\s+", ""));
+            params.put("termJamo", jamo.replaceAll("\\s+", ""));
+
+            System.out.println("params: " + params);
         }catch(Exception e){
             e.printStackTrace();
         }

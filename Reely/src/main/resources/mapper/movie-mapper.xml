@@ -325,19 +325,31 @@
 
     <select id="searchMoviesFlexible" parameterType="map" resultType="com.reely.dto.MovieDto">
         SELECT 
-            movie_id, 
-            movie_ko_nm, 
-            movie_en_nm, 
-            movie_open_dt
+            movie_id AS "movieId",
+            movie_ko_nm AS "movieKoNm", 
+            movie_en_nm AS "movieEnNm", 
+            movie_open_dt AS "movieOpenDt"
         FROM movie
-        WHERE 
-            -- 원문 한글/영문명 검색
-            movie_ko_nm LIKE CONCAT('%', #{term}, '%')
-            OR movie_en_nm LIKE CONCAT('%', #{term}, '%')
-            -- 초성 검색 (예: ㄷㅇㅁㄱ)
-            OR movie_ko_nm_initials LIKE CONCAT('%', #{termInitials}, '%')
-            -- 자모 검색 (예: ㄷ ㅐ ㅎ ㅏ ㄴ ㅁ ㅣ ㄴ ㄱ ㅡ ㄱ)
-            OR movie_ko_nm_jamo LIKE CONCAT('%', #{termJamo}, '%')
+        <where>
+            <trim prefixOverrides="OR">
+              <!-- 원문명: 대소문자 무시 -->
+              <if test="term != null and term != ''">
+                OR movie_ko_nm ILIKE '%' || #{term} || '%'
+                OR movie_en_nm ILIKE '%' || #{term} || '%'
+              </if>
+        
+              <!-- 초성 -->
+              <if test="termInitials != null and termInitials != ''">
+                OR movie_ko_nm_initials LIKE '%' || #{termInitials} || '%'
+              </if>
+        
+              <!-- 자모: 공백(스페이스/탭 등) 제거 후 비교 -->
+              <if test="termJamo != null and termJamo != ''">
+                OR regexp_replace(movie_ko_nm_jamo, '\s+', '', 'g')
+                   LIKE '%' || regexp_replace(#{termJamo}, '\s+', '', 'g') || '%'
+              </if>
+            </trim>
+          </where>
         ORDER BY movie_open_dt DESC
         LIMIT 200
     </select>
