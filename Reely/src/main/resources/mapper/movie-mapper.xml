@@ -336,6 +336,10 @@
               <if test="term != null and term != ''">
                 OR movie_ko_nm ILIKE '%' || #{term} || '%'
                 OR movie_en_nm ILIKE '%' || #{term} || '%'
+                OR regexp_replace(movie_ko_nm, '\s+', '', 'g')
+                   LIKE '%' || regexp_replace(#{movie_ko_nm}, '\s+', '', 'g') || '%'
+                OR regexp_replace(movie_en_nm, '\s+', '', 'g')
+                   LIKE '%' || regexp_replace(#{movie_en_nm}, '\s+', '', 'g') || '%'
               </if>
         
               <!-- 초성 -->
@@ -350,7 +354,6 @@
               </if>
             </trim>
           </where>
-        ORDER BY movie_open_dt DESC
         LIMIT 200
     </select>
 <!--SELECT upsert_movie(:movie_id, :movie_ko_nm, :movie_en_nm, :movie_open_dt);
