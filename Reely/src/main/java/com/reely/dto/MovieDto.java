@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
 public class MovieDto {
 
     // 영화 ID
-    private int movieId;
+    private Integer movieId;
 
     // tmdb 영화 ID
     private String tmdbMovieId;
@@ -37,6 +37,12 @@ public class MovieDto {
     private Integer movieRuntime;  
     // 개봉일  
     private String movieOpenDt;
+
+    // 검색용: 대표 포스터 경로(서버가 반환하는 포스터 URL 또는 경로)
+    private String posterPath;
+
+    // 검색용: 대표 포스터 파일 ID(파일 서빙 엔드포인트용)
+    private Integer posterFileId;
 
     // 감독 이름 (복수일 수 있음)
     private List<HashMap<String, String>> directorsList;
@@ -66,7 +72,7 @@ public class MovieDto {
     private String movieType;
 
     // 배우 ID
-    private int castId;
+    private Integer castId;
 
     // 배우 한국 이름
     private String castKoNm;
@@ -102,19 +108,19 @@ public class MovieDto {
                ? null : String.join(",", castFilmography);
     }
     // 배우 로코 이미지 ID
-    private int castLogoFileId;
+    private Integer castLogoFileId;
 
     // 파일
-    private int fileId;
+    private Integer fileId;
 
     // 영화 이미지 ID
-    private int movieImgId;
+    private Integer movieImgId;
 
     // 영화 이미지 type
-    private int imgType;
+    private Integer imgType;
 
     // 스텝 ID
-    private int crewId;
+    private Integer crewId;
 
     // 스텝 이름
     private String crewKoNm;
@@ -159,7 +165,7 @@ public class MovieDto {
     private String gender;
 
     // 제작국가 ID
-    private int countryId;
+    private Integer countryId;
 
     // 제작국가 코드
     private String countryCd;
@@ -177,7 +183,7 @@ public class MovieDto {
     private String comCd;
 
     // 영화사 ID
-    private int productionId;
+    private Integer productionId;
 
     // 영화사 한국 이름
     private String productionKoNm;
@@ -186,10 +192,10 @@ public class MovieDto {
     private String productionEnNm;
 
     // 영화 검색 ID
-    private int movieSearchId;
+    private Integer movieSearchId;
 
     // 사운드트랙 ID
-    private int soundtrackId;
+    private Integer soundtrackId;
 
 
     /* Kobis */
@@ -313,14 +319,14 @@ public class MovieDto {
     // 영화 제작사 국가
     private String productionCountry;
 
-    private int productionLogoFileId;
+    private Integer productionLogoFileId;
 
-    private int albumId;
+    private Integer albumId;
 
-    private int albumFileId;
+    private Integer albumFileId;
     
     // 재생 길이
-    private int durationMs;
+    private Integer durationMs;
 
     private String songNm;
     
@@ -328,9 +334,9 @@ public class MovieDto {
 
     private String albumNm;
 
-    private int imgSzWidth;
+    private Integer imgSzWidth;
 
-    private int imgSzHight;
+    private Integer imgSzHight;
 
-    private int albumImgId;
+    private Integer albumImgId;
 }

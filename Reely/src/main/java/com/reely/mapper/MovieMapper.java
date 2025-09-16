@@ -33,4 +33,5 @@ public interface MovieMapper {
     MovieDto getMovieInfo(int movieId);
     Integer insertMovieInfo(MovieDto movieDto);
     List<MovieDto> searchMoviesFlexible(Map<String, Object> params);
+    List<MovieDto> selectMovieFiles(Map<String, Object> params);
 }

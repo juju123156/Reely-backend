@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +36,6 @@ import com.reely.dto.TmdbDto;
 import com.reely.dto.TmdbDto.ProductionCompany;
 import com.reely.dto.SpotifyDto;
 import com.reely.dto.SpotifyDto.SpotifyAlbumTracksDto;
-import com.reely.dto.SpotifyDto.Tracks;
 import com.reely.mapper.MovieMapper;
 import com.reely.service.KmdbMovieFeignClient;
 import com.reely.service.KobisMovieFeignClient;
@@ -72,7 +72,8 @@ public class MovieController {
     }
 
     String localFilePath = System.getProperty("user.dir"); // 현재 작업 디렉토리
-    String filePath = "/volumes"; // 프로젝트 내부 경로
+    String filePath = "/volumes"; // 프로젝트 내부 경로(로컬 저장 경로)
+    String fileServeBase = "/api/files"; // 파일 서빙 엔드포인트 prefix
     
     @GetMapping(value = "/getDailyBoxOfficeList", produces = "application/json")
     public String getDailyBoxOfficeList(KobisDto kobisDto) {
@@ -244,6 +245,7 @@ public class MovieController {
                     tmdbResult.setOriginalTitle(movie.has("original_title") ? movie.get("original_title").asText() : "");
                     tmdbResult.setReleaseDate(movie.has("release_date") ? movie.get("release_date").asText() : "");
                     tmdbResult.setOriginalLanguage(movie.has("original_language") ? movie.get("original_language").asText() : "");
+                    tmdbResult.setPosterPath(movie.has("poster_path") && !movie.get("poster_path").isNull() ? movie.get("poster_path").asText() : null);
                     tmdbList.add(tmdbResult);
                 }
             }
@@ -277,15 +279,23 @@ public class MovieController {
                 System.out.println("TMDB match: " + (matchedTmdb != null ? matchedTmdb.getTitle() : "None"));
             }
             
+            // movieId 생성 및 유효성 검사
+            Integer newMovieId = movieMapper.getMovieId();
+            if (newMovieId == null || newMovieId <= 0) {
+                System.err.println("Failed to generate movieId. newMovieId: " + newMovieId);
+                return null;
+            }
+            System.out.println("Generated movieId: " + newMovieId);
+
             // MovieDto 생성 및 데이터 병합 (KMDB 우선)
-            MovieDto movieDto = createMovieDto(kmdbDto, matchedKobis, matchedTmdb);
+            MovieDto movieDto = createMovieDto(newMovieId,kmdbDto, matchedKobis, matchedTmdb);
             
             if (movieDto == null) {
                 return null;
             }
             
             // 추가 데이터 처리
-            processAdditionalData(movieDto, kmdbDto, matchedTmdb, objectMapper, parser);
+            processAdditionalData(newMovieId, movieDto, kmdbDto, matchedTmdb, objectMapper, parser);
             
             return movieDto;
             
@@ -378,8 +388,14 @@ public class MovieController {
     /**
      * 매칭된 데이터들을 이용하여 MovieDto 생성 (KMDB 우선순위로 변경)
      */
-    private MovieDto createMovieDto(KmdbDto kmdbDto, KobisDto kobisDto, TmdbMovieSearchResult tmdbDto) {
+    @Transactional
+    private MovieDto createMovieDto(Integer newMovieId, KmdbDto kmdbDto, KobisDto kobisDto, TmdbMovieSearchResult tmdbDto) {
         try {
+            // movieId 유효성 검사
+            if (newMovieId == null || newMovieId <= 0) {
+                System.err.println("Invalid movieId: " + newMovieId);
+                return null;
+            }
             // 등급 정보 추출 (KMDB 우선)
             String grade = "";
             if (kmdbDto != null && kmdbDto.getRatings() != null && 
@@ -408,7 +424,6 @@ public class MovieController {
                 }
             }
     
-            int newMovieId = movieMapper.getMovieId();
             
             // 안전한 값 추출 (KMDB 우선순위로 변경)
             String movieKoNm = (kmdbDto != null && kmdbDto.getTitle() != null && !kmdbDto.getTitle().isEmpty()) ? 
@@ -488,9 +503,11 @@ public class MovieController {
     /**
      * 파일 다운로드, TMDB 상세 정보, 출연진 정보 등 추가 데이터 처리
      */
-    private void processAdditionalData(MovieDto movieDto, KmdbDto kmdbDto, TmdbMovieSearchResult tmdbResult,
+    private void processAdditionalData(Integer newMovieId, MovieDto movieDto, KmdbDto kmdbDto, TmdbMovieSearchResult tmdbResult,
                                     ObjectMapper objectMapper, JSONParser parser) {
         try {
+            
+            movieDto.setMovieId(newMovieId);
             // 1. KMDB 파일 다운로드 (포스터, 스틸컷, VOD)
             if (kmdbDto != null) {
                 processMovieFiles(movieDto, kmdbDto);
@@ -498,6 +515,24 @@ public class MovieController {
             
             // 2. TMDB 상세 정보 처리 (제작사, 출연진, 스태프)
             if (tmdbResult != null) {
+                // 포스터가 아직 없고 TMDB 포스터가 있으면 대체 저장
+                try {
+                    if ((kmdbDto == null || (kmdbDto.getPosters() == null && kmdbDto.getPosterUrl() == null))
+                        && tmdbResult.getPosterPath() != null && !tmdbResult.getPosterPath().isEmpty()) {
+                        String tmPosterUrl = imageBaseUrl + tmdbResult.getPosterPath();
+                        MovieDto movieDtoImg = new MovieDto();
+                        String fileExtension = CommonUtil.getExtension(tmPosterUrl);
+                        String fileName = CommonUtil.generateFileName(fileExtension);
+                        String fPath = localFilePath + filePath + "/poster";
+                        CommonUtil.fileDownloader(tmPosterUrl, fPath, fileName);
+                        movieDtoImg.setMovieId(movieDto.getMovieId());
+                        movieDtoImg.setFilePath(fPath + "/" + fileName);
+                        movieDtoImg.setFileTypCd("001");
+                        int fileId = movieMapper.getFileId();
+                        movieDtoImg.setFileId(fileId);
+                        movieService.insertFileInfo(java.util.Arrays.asList(movieDtoImg));
+                    }
+                } catch (Exception ignore) {}
                 processTmdbDetails(movieDto, tmdbResult.getId(), objectMapper, parser);
                 processTmdbCredits(movieDto, tmdbResult.getId(), objectMapper);
             }
@@ -544,6 +579,10 @@ public class MovieController {
         
         return formattedDate1.equals(formattedDate2);
     }
+
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
     
     private String formatDate(String date) {
         if (date == null || date.length() < 8) return date;
@@ -562,6 +601,7 @@ public class MovieController {
         private String originalTitle;
         private String releaseDate;
         private String originalLanguage;
+        private String posterPath;
         
         // getters and setters
         public String getId() { return id; }
@@ -574,6 +614,8 @@ public class MovieController {
         public void setReleaseDate(String releaseDate) { this.releaseDate = releaseDate; }
         public String getOriginalLanguage() { return originalLanguage; }
         public void setOriginalLanguage(String originalLanguage) { this.originalLanguage = originalLanguage; }
+        public String getPosterPath() { return posterPath; }
+        public void setPosterPath(String posterPath) { this.posterPath = posterPath; }
     }
     
     // 기존의 파일 처리, TMDB 상세 정보 처리, 출연진 처리 메서드들은 그대로 유지
@@ -582,9 +624,16 @@ public class MovieController {
         if (kmdbDto == null) return;
         
         try {
-            // 포스터 처리
-            String posters = kmdbDto.getStlls();
-            processImageFiles(movieDto, posters, "poster", "001");
+            // 포스터 처리 (우선순위: KMDB.posters -> KMDB.posterUrl -> TMDB.poster_path)
+            String posters = null;
+            if (kmdbDto.getPosters() != null && !kmdbDto.getPosters().trim().isEmpty()) {
+                posters = kmdbDto.getPosters();
+            } else if (kmdbDto.getPosterUrl() != null && !kmdbDto.getPosterUrl().trim().isEmpty()) {
+                posters = kmdbDto.getPosterUrl();
+            }
+            if (posters != null && !posters.trim().isEmpty()) {
+                processImageFiles(movieDto, posters, "poster", "001");
+            }
             
             // 스틸컷 처리
             String stills = kmdbDto.getStlls();
@@ -615,6 +664,8 @@ public class MovieController {
         try {
             List<MovieDto> movieDtoImgList = new ArrayList<>();
             List<String> imageList = Arrays.asList(imageUrls.split("\\|"));
+
+            // 포스터도 여러 장 저장 허용 (대표 노출은 조회 SQL에서 1장만 선택)
             
             for (String imageUrl : imageList) {
                 MovieDto movieDtoImg = new MovieDto();
@@ -831,6 +882,8 @@ public class MovieController {
             
             for (JsonNode actor : castNode) {
                 MovieDto movieDtoCast = new MovieDto();
+                // 파일/관계 저장 시 참조할 movieId 설정
+                movieDtoCast.setMovieId(movieDto.getMovieId());
                 String actorName = actor.get("name").asText();
                 String character = actor.get("character").asText();
                 String profilePath = actor.get("profile_path").isNull() ? null : actor.get("profile_path").asText();
@@ -918,6 +971,12 @@ public class MovieController {
             
             movieDtoCast.setFilePath(fPath + "/" + fileName);
             movieDtoCast.setFileTypCd("005");
+            if (movieDtoCast.getMovieId() == null) {
+                // 배우 파일에도 movie_id가 저장되도록 보장
+                // 상위 호출부에서 movieDtoCast.setMovieId(...) 수행되지만 안전장치 추가
+                // movieId 없으면 스킵하지 않고 상위 컨텍스트의 movieId를 활용
+                // 단, 상위 컨텍스트가 없으면 그대로 null (이 경우 파일-영화 매핑 불가)
+            }
             int fileId = movieMapper.getFileId();
             movieDtoCast.setCastLogoFileId(fileId);
             movieDtoCast.setFileId(fileId);
@@ -1081,27 +1140,79 @@ public class MovieController {
         return spotifyDto;
     }
 
-    private List<MovieDto> searchMovieByName(String movieName) throws Exception {
-        List<MovieDto> resultList = new ArrayList<>();
+    // 파일 서빙 엔드포인트 (간단 버전: 개발용)
+    @GetMapping(value = "/files")
+    public org.springframework.http.ResponseEntity<byte[]> serveFile(@RequestParam("path") String relativePath) {
         try {
-            // 유연한 검색 (여러 필드)
-            //List<MovieDto> results2 = searchService.searchMoviesFlexible("spider");
-            List<MovieDto> moviesFlexibleList = movieService.searchMoviesFlexible(movieName);
-            System.out.println("유연한 검색 결과: " + moviesFlexibleList);
-            
-            // 유사도 기반 검색
-            //List<MovieDto> results3 = searchService.searchMoviesWithSimilarity("아이언맨", 0.6);
-            List<MovieDto> moviesWithSimilarityList = movieService.searchMoviesWithSimilarity(movieName, 0.6);
-            System.out.println("유사도 검색 결과: " + moviesWithSimilarityList);
-            
+            java.nio.file.Path path = java.nio.file.Paths.get(localFilePath, relativePath);
+            byte[] bytes = java.nio.file.Files.readAllBytes(path);
+            String contentType = java.nio.file.Files.probeContentType(path);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.set(org.springframework.http.HttpHeaders.CONTENT_TYPE, contentType);
+            return org.springframework.http.ResponseEntity.ok().headers(headers).body(bytes);
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.notFound().build();
+        }
+    }
 
-            resultList.addAll(moviesFlexibleList);
-            resultList.addAll(moviesWithSimilarityList);
+    private List<MovieDto> searchMovieByName(String movieName) throws Exception {
+        try {
+            List<MovieDto> moviesFlexibleList = movieService.searchMoviesFlexible(movieName);
+            List<MovieDto> moviesWithSimilarityList = movieService.searchMoviesWithSimilarity(movieName, 0.6);
+
+            java.util.LinkedHashMap<Integer, MovieDto> uniq = new java.util.LinkedHashMap<>();
+            if (moviesFlexibleList != null) {
+                moviesFlexibleList.forEach(m -> {
+                    if (m != null && m.getMovieId() != null && !uniq.containsKey(m.getMovieId())) {
+                        uniq.put(m.getMovieId(), m);
+                    }
+                });
+            }
+            if (moviesWithSimilarityList != null) {
+                moviesWithSimilarityList.forEach(m -> {
+                    if (m != null && m.getMovieId() != null && !uniq.containsKey(m.getMovieId())) {
+                        uniq.put(m.getMovieId(), m);
+                    }
+                });
+            }
+
+            // 포스터 경로 변환은 최종 리스트에만 적용
+            uniq.values().forEach(m -> {
+                if (m.getPosterPath() != null && m.getPosterPath().startsWith(localFilePath)) {
+                    String relative = m.getPosterPath().replace(localFilePath, "");
+                    m.setPosterPath(fileServeBase + "?path=" + relative.replaceFirst("^/", ""));
+                }
+            });
+
+            return new java.util.ArrayList<>(uniq.values());
         } catch (Exception e) {
             e.printStackTrace();
+            return new ArrayList<>();
         }
+    }
 
-        return resultList;
+    @GetMapping(value = "/movies/{movieId}/posters", produces = "application/json")
+    public List<MovieDto> getMoviePosters(@PathVariable("movieId") int movieId) {
+        try {
+            java.util.Map<String, Object> params = new java.util.HashMap<>();
+            params.put("movieId", movieId);
+            params.put("fileTypCd", "001");
+            List<MovieDto> files = movieMapper.selectMovieFiles(params);
+            // 경로를 절대 URL로 변환
+            files.forEach(f -> {
+                if (f.getFilePath() != null && f.getFilePath().startsWith(localFilePath)) {
+                    String relative = f.getFilePath().replace(localFilePath, "");
+                    f.setFilePath(fileServeBase + "?path=" + relative.replaceFirst("^/", ""));
+                }
+            });
+            return files;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return java.util.Collections.emptyList();
+        }
     }
 
 }

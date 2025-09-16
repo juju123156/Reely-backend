@@ -102,6 +102,7 @@
         insert into file
             (
              file_id,
+             movie_id,
              file_path,
              file_upload_dt,
              file_typ_cd,
@@ -111,6 +112,7 @@
         <foreach collection="list" item="file" separator=",">
             (
                 #{file.fileId},
+                #{file.movieId},
                 #{file.filePath},
                 NOW(),
                 #{file.fileTypCd},
@@ -325,36 +327,60 @@
 
     <select id="searchMoviesFlexible" parameterType="map" resultType="com.reely.dto.MovieDto">
         SELECT 
-            movie_id AS "movieId",
-            movie_ko_nm AS "movieKoNm", 
-            movie_en_nm AS "movieEnNm", 
-            movie_open_dt AS "movieOpenDt"
-        FROM movie
+            m.movie_id AS "movieId",
+            m.movie_ko_nm AS "movieKoNm", 
+            m.movie_en_nm AS "movieEnNm", 
+            m.movie_open_dt AS "movieOpenDt",
+            f.file_path AS "posterPath",
+            f.file_id   AS "posterFileId"
+        FROM movie m
+   LEFT JOIN LATERAL (
+            SELECT f1.file_id, f1.file_path
+              FROM file f1
+             WHERE f1.movie_id = m.movie_id
+               AND f1.file_typ_cd = '001'
+             ORDER BY f1.file_upload_dt ASC, f1.file_id ASC
+             LIMIT 1
+        ) f ON TRUE
         <where>
             <trim prefixOverrides="OR">
               <!-- 원문명: 대소문자 무시 -->
               <if test="term != null and term != ''">
-                OR movie_ko_nm ILIKE '%' || #{term} || '%'
-                OR movie_en_nm ILIKE '%' || #{term} || '%'
-                OR regexp_replace(movie_ko_nm, '\s+', '', 'g')
+                OR m.movie_ko_nm ILIKE '%' || #{term} || '%'
+                OR m.movie_en_nm ILIKE '%' || #{term} || '%'
+                OR regexp_replace(m.movie_ko_nm, '\s+', '', 'g')
                    LIKE '%' || regexp_replace(#{movie_ko_nm}, '\s+', '', 'g') || '%'
-                OR regexp_replace(movie_en_nm, '\s+', '', 'g')
+                OR regexp_replace(m.movie_en_nm, '\s+', '', 'g')
                    LIKE '%' || regexp_replace(#{movie_en_nm}, '\s+', '', 'g') || '%'
               </if>
         
               <!-- 초성 -->
               <if test="termInitials != null and termInitials != ''">
-                OR movie_ko_nm_initials LIKE '%' || #{termInitials} || '%'
+                OR m.movie_ko_nm_initials LIKE '%' || #{termInitials} || '%'
               </if>
         
               <!-- 자모: 공백(스페이스/탭 등) 제거 후 비교 -->
               <if test="termJamo != null and termJamo != ''">
-                OR regexp_replace(movie_ko_nm_jamo, '\s+', '', 'g')
+                OR regexp_replace(m.movie_ko_nm_jamo, '\s+', '', 'g')
                    LIKE '%' || regexp_replace(#{termJamo}, '\s+', '', 'g') || '%'
               </if>
             </trim>
           </where>
         LIMIT 200
+    </select>
+
+    <select id="selectMovieFiles" parameterType="map" resultType="com.reely.dto.MovieDto">
+        SELECT 
+            f.file_id   AS "fileId",
+            f.movie_id  AS "movieId",
+            f.file_path AS "filePath",
+            f.file_typ_cd AS "fileTypCd"
+        FROM file f
+        WHERE f.movie_id = #{movieId}
+          <if test="fileTypCd != null and fileTypCd != ''">
+          AND f.file_typ_cd = #{fileTypCd}
+          </if>
+        ORDER BY f.file_upload_dt ASC, f.file_id ASC
     </select>
 <!--SELECT upsert_movie(:movie_id, :movie_ko_nm, :movie_en_nm, :movie_open_dt);
 -->
