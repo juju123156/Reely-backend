@@ -1,0 +1,38 @@
+{
+  "leader_rotation": {
+    "leader_min_score": 70.0,
+    "leader_shadow_min_score": 60.0
+  },
+  "shallow_pullback": {
+    "pullback_min_pct": 0.003,
+    "pullback_max_pct": 0.012,
+    "entry_exec_min": 115.0,
+    "entry_ob_min": 0.9,
+    "entry_vwap_min_gap": -0.002,
+    "entry_score": 72.0,
+    "max_spread_pct": 0.003
+  },
+  "vwap_reclaim": {
+    "min_change_pct": 0.03,
+    "min_exec_strength": 105.0,
+    "min_vol_ratio": 1.5,
+    "min_vwap_gap": 0.0,
+    "max_spread_pct": 0.0025
+  },
+  "momentum_continuation": {
+    "max_pullback_pct": 0.004,
+    "min_exec_strength": 108.0,
+    "min_vol_ratio": 1.5,
+    "max_spread_pct": 0.003
+  },
+  "exit": {
+    "fast_take_profit_pct": 0.01,
+    "fast_time_stop_secs": 300,
+    "fast_trailing_pct": 0.01
+  },
+  "promotion": {
+    "leader_shallow_min_samples": 50,
+    "vwap_reclaim_min_samples": 50,
+    "momentum_continuation_min_samples": 100
+  }
+}

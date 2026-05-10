@@ -1,0 +1,14 @@
+.venv/
+.ui_runtime/
+.vscode/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+
+runs/
+data/
+
+.env
+.env.*
+!.env.example

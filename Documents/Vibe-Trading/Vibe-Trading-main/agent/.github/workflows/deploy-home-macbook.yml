@@ -1,0 +1,52 @@
+name: Deploy Home MacBook
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: home-macbook-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and restart Docker services
+    runs-on:
+      - self-hosted
+      - macOS
+      - home-macbook
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write paper env file
+        shell: bash
+        run: |
+          if [ -z "${PAPER_ENV_FILE}" ]; then
+            echo "PAPER_ENV_FILE secret is required" >&2
+            exit 1
+          fi
+          printf '%s\n' "${PAPER_ENV_FILE}" > .env.paper
+          chmod 600 .env.paper
+        env:
+          PAPER_ENV_FILE: ${{ secrets.PAPER_ENV_FILE }}
+
+      - name: Ensure runtime files
+        shell: bash
+        run: |
+          mkdir -p data
+          touch paper_trading.log
+
+      - name: Build and start services
+        shell: bash
+        run: |
+          docker compose -f deploy/home-macbook/docker-compose.yml up -d --build
+
+      - name: Verify services
+        shell: bash
+        run: |
+          docker compose -f deploy/home-macbook/docker-compose.yml ps
+          curl -fsS http://127.0.0.1:8765/ >/dev/null

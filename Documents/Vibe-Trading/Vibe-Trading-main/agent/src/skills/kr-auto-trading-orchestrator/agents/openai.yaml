@@ -1,0 +1,7 @@
+interface:
+  display_name: "KR Auto Trading Orchestrator"
+  short_description: "KR 전략 생성, 리스크 게이트, 실행 계획"
+  default_prompt: "Use $kr-auto-trading-orchestrator to turn a Korea-market trading idea into a backtested, risk-gated paper execution plan. Always write config.json first, then call prepare_orchestrator_config so mode, selected_symbols, and KR intraday exit_policy are persisted before backtest. HOLD is the default."
+
+policy:
+  allow_implicit_invocation: true
